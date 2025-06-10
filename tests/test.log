@@ -1,0 +1,5 @@
+[10/Jun/2025:21:18:06.100000Z] conn=100 op=0 BIND dn="uid=test,ou=people,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:21:18:06.200000Z] conn=100 op=0 RESULT err=0 tag=97 nentries=1 etime=0.0
+[10/Jun/2025:21:18:07.100000Z] conn=100 op=1 SRCH base="ou=people,dc=example,dc=com" scope=2 filter="(uid=test)"
+[10/Jun/2025:21:18:07.200000Z] conn=100 op=1 RESULT err=0 tag=101 nentries=1 etime=0.1
+[10/Jun/2025:21:18:07.300000Z] conn=100 op=-1 fd=12 closed
