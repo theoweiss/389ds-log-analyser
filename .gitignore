@@ -1,2 +1,6 @@
-log1.log
-src/__pycache__
+# Log files
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
