@@ -174,12 +174,22 @@ def print_open_connections_table(connections):
         bind_time = conn.bind_timestamp.isoformat() if conn.bind_timestamp else "N/A"
         print(f"{source_ip:<20} {bind_dn:<50} {bind_time:<35}")
 
+def print_unique_clients(connections):
+    """Prints a unique list of all client source IPs."""
+    print("Unique Client IPs")
+    print("-----------------")
+    
+    unique_ips = sorted(list(set(c.source_ip for c in connections.values() if c.source_ip)))
+    
+    for ip in unique_ips:
+        print(ip)
+
 def main():
     """Main function to parse arguments and run the data model builder."""
     parser = argparse.ArgumentParser(description="Parse 389-ds access logs and build a connection data model.")
     parser.add_argument("-f", "--log-file", required=True, help="Path to the log file.")
     parser.add_argument("--debug", action="store_true", help="Enable debug printing.")
-    parser.add_argument("--query", choices=['src_ip_table', 'open_connections'], help="Run a specific query instead of printing JSON.")
+    parser.add_argument("--query", choices=['src_ip_table', 'open_connections', 'unique_clients'], help="Run a specific query instead of printing JSON.")
     args = parser.parse_args()
 
     connections = build_data_model(args.log_file, args.debug)
@@ -188,6 +198,8 @@ def main():
         print_src_ip_table(connections)
     elif args.query == 'open_connections':
         print_open_connections_table(connections)
+    elif args.query == 'unique_clients':
+        print_unique_clients(connections)
     else:
         # Filter for connections that have a successful bind and have been closed.
         output = []

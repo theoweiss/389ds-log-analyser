@@ -61,6 +61,26 @@ Source IP            Bind DN                                     Bind Timestamp
 ... 
 ```
 
+#### Show Unique Client IPs (`unique_clients`)
+
+This query scans all connections and prints a unique, sorted list of all source IP addresses that have connected to the server.
+
+**Usage:**
+```bash
+python src/data_model.py -f <path_to_log_file> --query unique_clients
+```
+
+**Example Output:**
+```
+Unique Client IPs
+-----------------
+192.168.1.10
+192.168.1.11
+192.168.1.12
+192.168.1.13
+local
+```
+
 ### Default JSON Output Structure
 
 The script outputs a JSON array of connection objects with the following structure:
