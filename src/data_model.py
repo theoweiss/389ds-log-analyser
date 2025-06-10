@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 # Assuming log_parser.py is in the same directory or accessible
-from log_parser import LogTransformer, log_grammar, Lark
+from log_parser import parse_log_line
 
 class Operation:
     """Represents a single operation within a connection."""
@@ -106,7 +106,7 @@ class Connection:
 
 def build_data_model(log_file_path, debug=False):
     """Parses a log file and builds a structured data model of connections."""
-    log_parser = Lark(log_grammar, parser="lalr", transformer=LogTransformer())
+
 
     connections = {}
 
@@ -115,26 +115,26 @@ def build_data_model(log_file_path, debug=False):
             if not line.strip():
                 continue
             try:
-                parsed_line = log_parser.parse(line.strip())
+                parsed = parse_log_line(line.strip())
             except Exception as e:
                 if debug:
                     print(f"Failed to parse line: {line.strip()}\n{e}")
                 continue
 
-            if not parsed_line or 'conn' not in parsed_line:
+            if not parsed or 'conn' not in parsed:
                 continue
 
-            conn_id = parsed_line.get('conn')
-            op_num = parsed_line.get('op')
-            op_type = parsed_line.get('type')
-            timestamp = parsed_line.get('timestamp')
-            extra_text = parsed_line.get('extra_text') # This might be None
+            conn_id = parsed.get('conn')
+            op_num = parsed.get('op')
+            op_type = parsed.get('type')
+            timestamp = parsed.get('timestamp')
+            extra_text = parsed.get('extra_text') # This might be None
 
             if conn_id not in connections:
                 connections[conn_id] = Connection(conn_id)
 
             # Pass the entire parsed dictionary as the 'data' payload
-            connections[conn_id].add_operation(op_num, op_type, timestamp, parsed_line, extra_text)
+            connections[conn_id].add_operation(op_num, op_type, timestamp, parsed, extra_text)
 
     return connections
 

@@ -1,35 +1,58 @@
 import argparse
 import re
-from lark import Lark, Transformer, v_args
 from datetime import datetime, timezone, timedelta
 
-# A much simpler grammar that only extracts the core components.
-# The detailed key-value parsing is handled in Python.
-log_grammar = r"""
-    ?start: log_line
+# Regex to capture the timestamp and the rest of the message from a log line.
+LOG_LINE_RE = re.compile(r'^\[(.*?)\] (.*)$')
 
-    log_line: "[" timestamp "]" message
+# Regex to parse the timestamp string into its components.
+# Example: 10/Jun/2025:20:50:45.194508+00:00 or 10/Jun/2025:20:50:45 Z
+TIMESTAMP_RE = re.compile(
+    r'(\d{2})/(\w{3})/(\d{4}):(\d{2}):(\d{2}):(\d{2})'  # DD/Mon/YYYY:HH:MM:SS
+    r'(\.\d+)?'                                     # Optional fractional seconds
+    r'\s*([Zz]|[+-]\d{4})$'                          # Timezone (Z, +HHMM, or -HHMM)
+)
 
-    message: /.+/
+MONTH_MAP = {
+    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+    'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+}
 
-    timestamp: DAY "/" MONTH "/" YEAR ":" HOUR ":" MINUTE ":" SECOND FRACTIONAL? (Z | TIMEZONE)
+def parse_timestamp(ts_str):
+    """Converts a raw timestamp string into a timezone-aware datetime object."""
+    match = TIMESTAMP_RE.match(ts_str)
+    if not match:
+        return None
 
-    FRACTIONAL: /\.\d+/
+    day, month_str, year, hour, minute, second, fractional, tz_str = match.groups()
 
-    %import common.INT
-    %import common.WS
-    %ignore WS
+    month = MONTH_MAP.get(month_str.capitalize())
+    if not month:
+        return None
 
-    DAY: INT
-    MONTH: WORD
-    YEAR: INT
-    HOUR: INT
-    MINUTE: INT
-    SECOND: INT
-    TIMEZONE: /[+-]\d{4}/
-    Z: "Z"
-    %import common.WORD
-"""
+    microsecond = 0
+    if fractional:
+        # The fractional part includes the dot, e.g., ".123456"
+        # Truncate or pad to 6 digits for microseconds.
+        sec_frac_str = fractional[1:7]
+        microsecond = int(sec_frac_str.ljust(6, '0'))
+
+    dt = datetime(int(year), month, int(day), int(hour), int(minute), int(second), microsecond)
+
+    if tz_str:
+        if tz_str.upper() == 'Z':
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            offset_hours = int(tz_str[1:3])
+            offset_minutes = int(tz_str[3:5])
+            offset_sign = -1 if tz_str[0] == '-' else 1
+            offset = timedelta(hours=offset_hours, minutes=offset_minutes) * offset_sign
+            dt = dt.replace(tzinfo=timezone(offset))
+    else:
+        # Default to UTC if no timezone is specified.
+        dt = dt.replace(tzinfo=timezone.utc)
+    
+    return dt
 
 def parse_key_value_message(message):
     """
@@ -111,43 +134,25 @@ def parse_key_value_message(message):
 
     return data
 
-@v_args(inline=True)
-class LogTransformer(Transformer):
-    def log_line(self, timestamp, message):
-        parsed_message = parse_key_value_message(str(message))
-        parsed_message['timestamp'] = timestamp
-        return parsed_message
+def parse_log_line(line):
+    """
+    Parses a single log line into a structured dictionary.
+    Returns None if the line format is invalid.
+    """
+    match = LOG_LINE_RE.match(line)
+    if not match:
+        return None
 
-    def message(self, *parts):
-        return " ".join(str(p) for p in parts)
+    timestamp_str, message_str = match.groups()
 
-    def timestamp(self, day, month_str, year, hour, minute, second, fractional=None, tz=None):
-        """Converts parsed timestamp parts into a datetime object."""
-        month = int(datetime.strptime(month_str, '%b').month)
-        
-        microsecond = 0
-        if fractional:
-            # The fractional part includes the dot, e.g., ".123456789"
-            # We need to truncate to 6 digits for microseconds.
-            sec_frac_str = fractional[1:7]
-            microsecond = int(sec_frac_str.ljust(6, '0'))
+    timestamp = parse_timestamp(timestamp_str)
+    if not timestamp:
+        return None # Failed to parse timestamp
 
-        dt = datetime(int(year), month, int(day), int(hour), int(minute), int(second), microsecond)
-
-        if tz:
-            if tz == 'Z':
-                dt = dt.replace(tzinfo=timezone.utc)
-            else:
-                offset_hours = int(tz[1:3])
-                offset_minutes = int(tz[3:5])
-                offset_sign = -1 if tz[0] == '-' else 1
-                offset = timedelta(hours=offset_hours, minutes=offset_minutes) * offset_sign
-                dt = dt.replace(tzinfo=timezone(offset))
-        else:
-            # Per RFCs, if timezone is not specified, it should be treated as local time.
-            # However, in the context of server logs, assuming UTC is a safer default.
-            dt = dt.replace(tzinfo=timezone.utc)
-        return dt
+    parsed_message = parse_key_value_message(message_str)
+    parsed_message['timestamp'] = timestamp
+    
+    return parsed_message
 
 def main():
     parser = argparse.ArgumentParser(description="Parse 389-ds access logs.")
@@ -155,22 +160,27 @@ def main():
     parser.add_argument("-l", "--line", help="A single log line to parse.")
     args = parser.parse_args()
 
-    log_parser = Lark(log_grammar, parser='lalr', transformer=LogTransformer())
-
     if args.file:
         with open(args.file, 'r') as f:
             for line in f:
+                line = line.strip()
+                if not line:
+                    continue
                 try:
-                    parsed = log_parser.parse(line.strip())
-                    print(parsed)
+                    parsed = parse_log_line(line)
+                    if parsed:
+                        print(parsed)
                 except Exception as e:
-                    print(f"Error parsing line: {line.strip()}\n{e}")
+                    print(f"Error parsing line: {line}\n{e}")
     elif args.line:
-        try:
-            parsed = log_parser.parse(args.line.strip())
-            print(parsed)
-        except Exception as e:
-            print(f"Error parsing line: {args.line.strip()}\n{e}")
+        line = args.line.strip()
+        if line:
+            try:
+                parsed = parse_log_line(line)
+                if parsed:
+                    print(parsed)
+            except Exception as e:
+                print(f"Error parsing line: {line}\n{e}")
 
 if __name__ == "__main__":
     main()
