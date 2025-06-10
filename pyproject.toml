@@ -30,4 +30,8 @@ pythonpath = ["src"]
 
 [project.scripts]
 389ds-log-analyser = "cli:main"
+389ds-src-ip-table = "cli:main_src_ip_table"
+389ds-open-connections = "cli:main_open_connections"
+389ds-unique-clients = "cli:main_unique_clients"
+389ds-unindexed-searches = "cli:main_unindexed_searches"
 

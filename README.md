@@ -27,6 +27,21 @@ The primary command is `389ds-log-analyser`. It requires a log file to be specif
 
 ```bash
 389ds-log-analyser <command> -f <path_to_log_file> [options]
+
+### Shortcut Commands
+
+For convenience, each command is also available as a standalone script. This allows for more direct invocation of a specific query.
+
+- `389ds-src-ip-table`
+- `389ds-open-connections`
+- `389ds-unique-clients`
+- `389ds-unindexed-searches`
+
+**Usage:**
+```bash
+# Example using the src-ip-table shortcut
+389ds-src-ip-table -f <path_to_log_file>
+```
 ```
 
 ### Filtering by Client IP

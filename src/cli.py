@@ -1,4 +1,5 @@
 import argparse
+import sys
 from data_model import build_data_model
 
 def print_src_ip_table(connections):
@@ -118,3 +119,20 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+def main_src_ip_table():
+    sys.argv.insert(1, 'src-ip-table')
+    main()
+
+def main_open_connections():
+    sys.argv.insert(1, 'open-connections')
+    main()
+
+def main_unique_clients():
+    sys.argv.insert(1, 'unique-clients')
+    main()
+
+def main_unindexed_searches():
+    sys.argv.insert(1, 'unindexed-searches')
+    main()
+
