@@ -94,6 +94,22 @@ Unique Client IPs
 local
 ```
 
+#### Show Unindexed Searches (`unindexed_searches`)
+
+This query is essential for performance tuning. It identifies and lists all search operations (`SRCH`) that resulted in a `Partially Unindexed Filter` note, which can indicate missing database indexes.
+
+**Usage:**
+```bash
+python src/data_model.py -f <path_to_log_file> --query unindexed_searches
+```
+
+**Example Output:**
+```
+Timestamp                           Conn       Op         Base                           Filter
+----------------------------------- ---------- ---------- ------------------------------ ----------------------------------------
+2025-06-10T11:06:44.711859+02:00    105        1          dc=example,dc=com              (&(objectClass=ipHost)(ipHostNumber=10.31.50.48))
+```
+
 ### Default JSON Output Structure
 
 The script outputs a JSON array of connection objects with the following structure:

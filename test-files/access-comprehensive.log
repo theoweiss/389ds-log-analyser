@@ -28,3 +28,6 @@
 [10/Jun/2025:21:18:15.200000 +0000] conn=104 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="uid=activeuser,ou=people,dc=example,dc=com"
 [10/Jun/2025:21:18:16.000000 +0000] conn=104 op=1 SRCH base="ou=people,dc=example,dc=com" scope=2 filter="(uid=test)"
 [10/Jun/2025:21:18:16.100000 +0000] conn=104 op=1 RESULT err=0 tag=101 nentries=1 etime=0.1
+
+[10/Jun/2025:11:06:44.711859 +0200] conn=105 op=1 SRCH base="dc=example,dc=com" scope=2 filter="(&(objectClass=ipHost)(ipHostNumber=10.31.50.48))" attrs="objectClass cn ipHostNumber modifyTimestamp"
+[10/Jun/2025:11:06:44.733461 +0200] conn=105 op=1 RESULT err=0 tag=101 nentries=0 wtime=0.000240 optime=0.021603 etime=0.021837 notes=U details="Partially Unindexed Filter"

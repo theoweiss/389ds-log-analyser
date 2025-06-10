@@ -184,12 +184,30 @@ def print_unique_clients(connections):
     for ip in unique_ips:
         print(ip)
 
+def print_unindexed_searches_table(connections):
+    """Prints a table of partially unindexed searches."""
+    print(f"{'Timestamp':<35} {'Conn':<10} {'Op':<10} {'Base':<30} {'Filter'}")
+    print(f"{'-----------------------------------':<35} {'----------':<10} {'----------':<10} {'------------------------------':<30} {'-'*40}")
+
+    unindexed_searches = []
+    for conn in connections.values():
+        for op in conn.operations.values():
+            if op.op_type == 'SRCH' and op.result and op.result.get('details') == 'Partially Unindexed Filter':
+                unindexed_searches.append((op.timestamp, conn.conn_num, op.op_num, op.data.get('base', 'N/A'), op.data.get('filter', 'N/A')))
+
+    # Sort by timestamp
+    unindexed_searches.sort(key=lambda x: x[0])
+
+    for ts, conn_num, op_num, base, sfilter in unindexed_searches:
+        timestamp_str = ts.isoformat() if ts else 'N/A'
+        print(f"{timestamp_str:<35} {conn_num:<10} {op_num:<10} {base:<30} {sfilter}")
+
 def main():
     """Main function to parse arguments and run the data model builder."""
     parser = argparse.ArgumentParser(description="Parse 389-ds access logs and build a connection data model.")
     parser.add_argument("-f", "--log-file", required=True, help="Path to the log file.")
     parser.add_argument("--debug", action="store_true", help="Enable debug printing.")
-    parser.add_argument("--query", choices=['src_ip_table', 'open_connections', 'unique_clients'], help="Run a specific query instead of printing JSON.")
+    parser.add_argument("--query", choices=['src_ip_table', 'open_connections', 'unique_clients', 'unindexed_searches'], help="Run a specific query instead of printing JSON.")
     parser.add_argument("--filter-client-ip", nargs='+', help="Filter connections by one or more client source IPs.")
     args = parser.parse_args()
 
@@ -207,6 +225,8 @@ def main():
         print_open_connections_table(connections)
     elif args.query == 'unique_clients':
         print_unique_clients(connections)
+    elif args.query == 'unindexed_searches':
+        print_unindexed_searches_table(connections)
     else:
         # Filter for connections that have a successful bind and have been closed.
         output = []
