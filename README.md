@@ -1,12 +1,16 @@
 # 389ds-log-analyser
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
+[![Tests](https://github.com/theoweiss/389ds-log-analyser/actions/workflows/ci.yml/badge.svg)](https://github.com/theoweiss/389ds-log-analyser/actions/workflows/ci.yml)
+
 This project provides a command-line tool to parse and analyze 389 Directory Server access logs. It can identify and report on completed connections, open connections, unindexed searches, and more.
 
-## Installation
+## 🚀 Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/389ds-log-analyser.git
+    git clone https://github.com/theoweiss/389ds-log-analyser.git
     cd 389ds-log-analyser
     ```
 
@@ -21,7 +25,7 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
     pip install -e '.[dev]'
     ```
 
-## Usage
+## 💻 Usage
 
 The primary command is `389ds-log-analyser`. It requires a log file to be specified with the `-f` or `--file` argument.
 
@@ -57,7 +61,7 @@ The `--filter-client-ip` argument allows you to filter the output to show connec
 389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10 192.168.1.11
 ```
 
-### Commands
+### 🛠️ Commands
 
 
 #### Show Completed Connections (`src-ip-table`)
