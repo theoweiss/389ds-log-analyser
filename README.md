@@ -1,25 +1,32 @@
-This project provides tools to parse and analyze 389-ds access logs.
+# 389-ds Access Log Parser
 
-## `log_parser.py`
+This project provides a command-line tool to parse and analyze 389 Directory Server access logs. It can identify and report on completed connections, open connections, unindexed searches, and more.
 
-This script parses raw 389-ds access logs and outputs a stream of JSON objects, one for each log line.
+## Installation
 
-### Usage
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/ldap-log-parse-389-ds.git
+    cd ldap-log-parse-389-ds
+    ```
+
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+
+3.  **Install the project in editable mode:**
+    ```bash
+    pip install -e '.[dev]'
+    ```
+
+## Usage
+
+The primary command is `ldap-log-parser`. It requires a log file to be specified with the `-f` or `--file` argument.
 
 ```bash
-python src/log_parser.py -f <path_to_log_file>
-```
-
-## `data_model.py`
-
-This script processes the logs to build a structured data model of connections. It identifies connections that are successfully established with a `BIND` operation and terminated with an `UNBIND`, and it lists all associated operations.
-
-### Usage
-
-By default, the script outputs a JSON array of all successfully completed connections.
-
-```bash
-python src/data_model.py -f <path_to_log_file>
+ldap-log-parser -f <path_to_log_file> --query <query_mode>
 ```
 
 ### Filtering by Client IP
@@ -29,10 +36,10 @@ The `--filter-client-ip` argument allows you to filter the output to show connec
 **Usage:**
 ```bash
 # Filter for a single IP
-python src/data_model.py -f <log_file> --filter-client-ip 192.168.1.10
+ldap-log-parser -f <log_file> --filter-client-ip 192.168.1.10
 
 # Filter for multiple IPs
-python src/data_model.py -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
+ldap-log-parser -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
 ```
 
 ### Query Modes
@@ -46,7 +53,7 @@ This query displays a table of all connections that have a successful `BIND` and
 
 **Usage:**
 ```bash
-python src/data_model.py -f <path_to_log_file> --query src_ip_table
+ldap-log-parser -f <path_to_log_file> --query src_ip_table
 ```
 
 **Example Output:**
@@ -63,7 +70,7 @@ This query displays a table of all connections that have a successful `BIND` but
 
 **Usage:**
 ```bash
-python src/data_model.py -f <path_to_log_file> --query open_connections
+ldap-log-parser -f <path_to_log_file> --query open_connections
 ```
 
 **Example Output:**
@@ -80,7 +87,7 @@ This query scans all connections and prints a unique, sorted list of all source 
 
 **Usage:**
 ```bash
-python src/data_model.py -f <path_to_log_file> --query unique_clients
+ldap-log-parser -f <path_to_log_file> --query unique_clients
 ```
 
 **Example Output:**
@@ -100,7 +107,7 @@ This query is essential for performance tuning. It identifies and lists all sear
 
 **Usage:**
 ```bash
-python src/data_model.py -f <path_to_log_file> --query unindexed_searches
+ldap-log-parser -f <path_to_log_file> --query unindexed_searches
 ```
 
 **Example Output:**

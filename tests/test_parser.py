@@ -1,10 +1,4 @@
 from datetime import datetime, timezone, timedelta
-import sys
-import os
-
-# Add src directory to path to import log_parser
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
 from log_parser import parse_log_line, parse_timestamp
 
 def test_parse_timestamp_zulu():
