@@ -1,0 +1,30 @@
+[10/Jun/2025:21:18:06.000000 +0000] conn=100 fd=12 slot=12 connection from 192.168.1.10 to 192.168.1.1
+[10/Jun/2025:21:18:06.100000 +0000] conn=100 op=0 BIND dn="uid=test,ou=people,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:21:18:06.200000 +0000] conn=100 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="uid=test,ou=people,dc=example,dc=com"
+[10/Jun/2025:21:18:07.000000 +0000] conn=100 op=1 UNBIND
+[10/Jun/2025:21:18:07.100000 +0000] conn=100 op=1 RESULT err=0 tag=101 nentries=0 etime=0
+[10/Jun/2025:21:18:07.200000 +0000] conn=100 op=-1 fd=12 closed
+
+[10/Jun/2025:21:18:08.000000 +0000] conn=101 fd=13 slot=13 connection from 192.168.1.11 to 192.168.1.1
+[10/Jun/2025:21:18:08.100000 +0000] conn=101 op=0 BIND dn="cn=directory manager" method=128 version=3
+[10/Jun/2025:21:18:08.200000 +0000] conn=101 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="cn=directory manager"
+[10/Jun/2025:21:18:09.000000 +0000] conn=101 op=1 ADD dn="uid=newuser,ou=people,dc=example,dc=com"
+[10/Jun/2025:21:18:09.100000 +0000] conn=101 op=1 RESULT err=0 tag=105 nentries=0 etime=0.1
+[10/Jun/2025:21:18:10.000000 +0000] conn=101 op=2 DEL dn="uid=newuser,ou=people,dc=example,dc=com"
+[10/Jun/2025:21:18:10.100000 +0000] conn=101 op=2 RESULT err=0 tag=107 nentries=0 etime=0.1
+[10/Jun/2025:21:18:11.000000 +0000] conn=101 op=-1 fd=13 closed
+
+[10/Jun/2025:21:18:12.000000 +0000] conn=102 fd=14 slot=14 connection from 192.168.1.12 to 192.168.1.1
+[10/Jun/2025:21:18:12.100000 +0000] conn=102 op=0 BIND dn="uid=another,ou=people,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:21:18:12.200000 +0000] conn=102 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="uid=another,ou=people,dc=example,dc=com"
+
+[10/Jun/2025:21:18:13.000000 +0000] conn=103 fd=15 slot=15 connection from local to /var/run/slapd-INSTANCE.socket
+[10/Jun/2025:21:18:13.100000 +0000] conn=103 op=0 BIND dn="cn=directory manager" method=128 version=3
+[10/Jun/2025:21:18:13.200000 +0000] conn=103 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="cn=directory manager"
+[10/Jun/2025:21:18:14.000000 +0000] conn=103 op=-1 fd=15 closed
+
+[10/Jun/2025:21:18:15.000000 +0000] conn=104 fd=16 slot=16 connection from 192.168.1.13 to 192.168.1.1
+[10/Jun/2025:21:18:15.100000 +0000] conn=104 op=0 BIND dn="uid=activeuser,ou=people,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:21:18:15.200000 +0000] conn=104 op=0 RESULT err=0 tag=97 nentries=0 etime=0.1 dn="uid=activeuser,ou=people,dc=example,dc=com"
+[10/Jun/2025:21:18:16.000000 +0000] conn=104 op=1 SRCH base="ou=people,dc=example,dc=com" scope=2 filter="(uid=test)"
+[10/Jun/2025:21:18:16.100000 +0000] conn=104 op=1 RESULT err=0 tag=101 nentries=1 etime=0.1
