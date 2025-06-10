@@ -60,22 +60,61 @@ def print_unindexed_searches_table(connections):
         print(f"{ts.isoformat():<35} {conn_num:<10} {op_num:<10} {base:<30} {sfilter}")
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse 389-ds access logs and query connection data.')
-    parser.add_argument('-f', '--file', required=True, help='Path to the log file.')
-    parser.add_argument('--query', choices=['src_ip_table', 'open_connections', 'unique_clients', 'unindexed_searches'], help='The query to run on the log data.')
-    parser.add_argument('--debug', action='store_true', help='Enable debug output for parsing errors.')
+    # Parent parser for common arguments that all subcommands will use
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument('-f', '--file', required=True, help='Path to the log file.')
+    parent_parser.add_argument('--debug', action='store_true', help='Enable debug output for parsing errors.')
+    parent_parser.add_argument('--filter-client-ip', nargs='+', help='Filter connections by one or more source IPs.')
+
+    # Main parser
+    parser = argparse.ArgumentParser(description='Analyze 389-ds access logs.')
+    subparsers = parser.add_subparsers(dest='command', required=True, help='Available commands')
+
+    # src_ip_table command
+    parser_src_ip = subparsers.add_parser(
+        'src-ip-table',
+        help='Display a table of completed connections with source IP and timestamps.',
+        parents=[parent_parser]
+    )
+    parser_src_ip.set_defaults(func=print_src_ip_table)
+
+    # open_connections command
+    parser_open = subparsers.add_parser(
+        'open-connections',
+        help='Display a table of connections that are still open.',
+        parents=[parent_parser]
+    )
+    parser_open.set_defaults(func=print_open_connections_table)
+
+    # unique_clients command
+    parser_unique = subparsers.add_parser(
+        'unique-clients',
+        help='Display a unique list of all client source IPs.',
+        parents=[parent_parser]
+    )
+    parser_unique.set_defaults(func=print_unique_clients)
+
+    # unindexed_searches command
+    parser_unindexed = subparsers.add_parser(
+        'unindexed-searches',
+        help='Display a table of unindexed searches.',
+        parents=[parent_parser]
+    )
+    parser_unindexed.set_defaults(func=print_unindexed_searches_table)
+
     args = parser.parse_args()
 
     connections = build_data_model(args.file, args.debug)
 
-    if args.query == 'src_ip_table':
-        print_src_ip_table(connections)
-    elif args.query == 'open_connections':
-        print_open_connections_table(connections)
-    elif args.query == 'unique_clients':
-        print_unique_clients(connections)
-    elif args.query == 'unindexed_searches':
-        print_unindexed_searches_table(connections)
+    if args.filter_client_ip:
+        connections = {
+            conn_num: conn for conn_num, conn in connections.items()
+            if conn.source_ip in args.filter_client_ip
+        }
+
+    # Call the function associated with the chosen subcommand
+    if hasattr(args, 'func'):
+        args.func(connections)
 
 if __name__ == '__main__':
     main()

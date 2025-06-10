@@ -26,34 +26,32 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 The primary command is `389ds-log-analyser`. It requires a log file to be specified with the `-f` or `--file` argument.
 
 ```bash
-389ds-log-analyser -f <path_to_log_file> --query <query_mode>
+389ds-log-analyser <command> -f <path_to_log_file> [options]
 ```
 
 ### Filtering by Client IP
 
-The `--filter-client-ip` argument allows you to filter the output to show connections only from one or more specific source IPs. This filter applies to all query modes as well as the default JSON output.
+The `--filter-client-ip` argument allows you to filter the output to show connections only from one or more specific source IPs. This filter applies to all commands.
 
 **Usage:**
 ```bash
 # Filter for a single IP
-389ds-log-analyser -f <log_file> --filter-client-ip 192.168.1.10
+389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10
 
 # Filter for multiple IPs
-389ds-log-analyser -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
+389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10 192.168.1.11
 ```
 
-### Query Modes
-
-The `--query` argument allows you to generate summarized, human-readable reports instead of the full JSON output.
+### Commands
 
 
-#### Show Completed Connections (`src_ip_table`)
+#### Show Completed Connections (`src-ip-table`)
 
 This query displays a table of all connections that have a successful `BIND` and have been closed. The table includes the source IP, bind timestamp, and unbind timestamp.
 
 **Usage:**
 ```bash
-389ds-log-analyser -f <path_to_log_file> --query src_ip_table
+389ds-log-analyser src-ip-table -f <path_to_log_file>
 ```
 
 **Example Output:**
@@ -64,13 +62,13 @@ Source IP            Bind Timestamp                      Unbind Timestamp
 ... 
 ```
 
-#### Show Open Connections (`open_connections`)
+#### Show Open Connections (`open-connections`)
 
 This query displays a table of all connections that have a successful `BIND` but have not yet been closed. This is useful for monitoring currently active sessions.
 
 **Usage:**
 ```bash
-389ds-log-analyser -f <path_to_log_file> --query open_connections
+389ds-log-analyser open-connections -f <path_to_log_file>
 ```
 
 **Example Output:**
@@ -81,13 +79,13 @@ Source IP            Bind DN                                     Bind Timestamp
 ... 
 ```
 
-#### Show Unique Client IPs (`unique_clients`)
+#### Show Unique Client IPs (`unique-clients`)
 
 This query scans all connections and prints a unique, sorted list of all source IP addresses that have connected to the server.
 
 **Usage:**
 ```bash
-389ds-log-analyser -f <path_to_log_file> --query unique_clients
+389ds-log-analyser unique-clients -f <path_to_log_file>
 ```
 
 **Example Output:**
@@ -101,13 +99,13 @@ Unique Client IPs
 local
 ```
 
-#### Show Unindexed Searches (`unindexed_searches`)
+#### Show Unindexed Searches (`unindexed-searches`)
 
 This query is essential for performance tuning. It identifies and lists all search operations (`SRCH`) that resulted in a `Partially Unindexed Filter` note, which can indicate missing database indexes.
 
 **Usage:**
 ```bash
-389ds-log-analyser -f <path_to_log_file> --query unindexed_searches
+389ds-log-analyser unindexed-searches -f <path_to_log_file>
 ```
 
 **Example Output:**
