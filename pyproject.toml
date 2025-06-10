@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ldap-log-parser-389-ds"
+name = "389ds-log-analyser"
 version = "1.0.0"
 authors = [
   { name="Thomas Weiss", email="weiss@puzzle-itc.de" },
@@ -29,5 +29,5 @@ where = ["src"]
 pythonpath = ["src"]
 
 [project.scripts]
-ldap-log-parser = "cli:main"
+389ds-log-analyser = "cli:main"
 

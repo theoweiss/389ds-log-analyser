@@ -1,4 +1,4 @@
-# 389-ds Access Log Parser
+# 389ds-log-analyser
 
 This project provides a command-line tool to parse and analyze 389 Directory Server access logs. It can identify and report on completed connections, open connections, unindexed searches, and more.
 
@@ -6,8 +6,8 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/ldap-log-parse-389-ds.git
-    cd ldap-log-parse-389-ds
+    git clone https://github.com/your-username/389ds-log-analyser.git
+    cd 389ds-log-analyser
     ```
 
 2.  **Create and activate a virtual environment:**
@@ -23,10 +23,10 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 
 ## Usage
 
-The primary command is `ldap-log-parser`. It requires a log file to be specified with the `-f` or `--file` argument.
+The primary command is `389ds-log-analyser`. It requires a log file to be specified with the `-f` or `--file` argument.
 
 ```bash
-ldap-log-parser -f <path_to_log_file> --query <query_mode>
+389ds-log-analyser -f <path_to_log_file> --query <query_mode>
 ```
 
 ### Filtering by Client IP
@@ -36,10 +36,10 @@ The `--filter-client-ip` argument allows you to filter the output to show connec
 **Usage:**
 ```bash
 # Filter for a single IP
-ldap-log-parser -f <log_file> --filter-client-ip 192.168.1.10
+389ds-log-analyser -f <log_file> --filter-client-ip 192.168.1.10
 
 # Filter for multiple IPs
-ldap-log-parser -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
+389ds-log-analyser -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
 ```
 
 ### Query Modes
@@ -53,7 +53,7 @@ This query displays a table of all connections that have a successful `BIND` and
 
 **Usage:**
 ```bash
-ldap-log-parser -f <path_to_log_file> --query src_ip_table
+389ds-log-analyser -f <path_to_log_file> --query src_ip_table
 ```
 
 **Example Output:**
@@ -70,7 +70,7 @@ This query displays a table of all connections that have a successful `BIND` but
 
 **Usage:**
 ```bash
-ldap-log-parser -f <path_to_log_file> --query open_connections
+389ds-log-analyser -f <path_to_log_file> --query open_connections
 ```
 
 **Example Output:**
@@ -87,7 +87,7 @@ This query scans all connections and prints a unique, sorted list of all source 
 
 **Usage:**
 ```bash
-ldap-log-parser -f <path_to_log_file> --query unique_clients
+389ds-log-analyser -f <path_to_log_file> --query unique_clients
 ```
 
 **Example Output:**
@@ -107,7 +107,7 @@ This query is essential for performance tuning. It identifies and lists all sear
 
 **Usage:**
 ```bash
-ldap-log-parser -f <path_to_log_file> --query unindexed_searches
+389ds-log-analyser -f <path_to_log_file> --query unindexed_searches
 ```
 
 **Example Output:**
