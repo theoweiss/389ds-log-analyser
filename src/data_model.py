@@ -190,9 +190,16 @@ def main():
     parser.add_argument("-f", "--log-file", required=True, help="Path to the log file.")
     parser.add_argument("--debug", action="store_true", help="Enable debug printing.")
     parser.add_argument("--query", choices=['src_ip_table', 'open_connections', 'unique_clients'], help="Run a specific query instead of printing JSON.")
+    parser.add_argument("--filter-client-ip", nargs='+', help="Filter connections by one or more client source IPs.")
     args = parser.parse_args()
 
     connections = build_data_model(args.log_file, args.debug)
+
+    if args.filter_client_ip:
+        connections = {
+            conn_num: conn for conn_num, conn in connections.items()
+            if conn.source_ip in args.filter_client_ip
+        }
 
     if args.query == 'src_ip_table':
         print_src_ip_table(connections)

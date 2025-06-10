@@ -22,6 +22,19 @@ By default, the script outputs a JSON array of all successfully completed connec
 python src/data_model.py -f <path_to_log_file>
 ```
 
+### Filtering by Client IP
+
+The `--filter-client-ip` argument allows you to filter the output to show connections only from one or more specific source IPs. This filter applies to all query modes as well as the default JSON output.
+
+**Usage:**
+```bash
+# Filter for a single IP
+python src/data_model.py -f <log_file> --filter-client-ip 192.168.1.10
+
+# Filter for multiple IPs
+python src/data_model.py -f <log_file> --query src_ip_table --filter-client-ip 192.168.1.10 192.168.1.11
+```
+
 ### Query Modes
 
 The `--query` argument allows you to generate summarized, human-readable reports instead of the full JSON output.
