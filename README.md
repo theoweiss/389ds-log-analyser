@@ -14,6 +14,34 @@ You can install this package directly from GitHub using `pip`:
 pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.0.0
 ```
 
+## 📦 Offline Installation from a Local Clone
+
+If you need to install the package on a machine that does not have internet access, you can do so from a local clone.
+
+### Step 1: On a Machine With Internet Access
+
+First, get a copy of the repository.
+
+```bash
+# Clone the repository
+git clone https://github.com/theoweiss/389ds-log-analyser.git
+```
+
+### Step 2: Transfer to the Offline Machine
+
+Copy the entire `389ds-log-analyser` directory to the offline machine using a USB drive or other method.
+
+### Step 3: On the Offline Machine
+
+Navigate into the project directory and use `pip` to install it. The `--no-deps` flag is important to prevent `pip` from trying to connect to the internet to resolve dependencies.
+
+```bash
+cd 389ds-log-analyser
+pip install --no-deps .
+```
+
+> **Note:** This works because the base package currently has no external dependencies. If dependencies are added in the future, they would need to be downloaded separately on the online machine and transferred along with the project.
+
 ## 💻 Usage
 
 The primary command is `389ds-log-analyser`. It requires a log file to be specified with the `-f` or `--file` argument.
