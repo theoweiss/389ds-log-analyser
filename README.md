@@ -6,24 +6,13 @@
 
 This project provides a command-line tool to parse and analyze 389 Directory Server access logs. It can identify and report on completed connections, open connections, unindexed searches, and more.
 
-## 🚀 Installation
+## 💾 Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/theoweiss/389ds-log-analyser.git
-    cd 389ds-log-analyser
-    ```
+You can install this package directly from GitHub using `pip`:
 
-2.  **Create and activate a virtual environment:**
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
-
-3.  **Install the project in editable mode:**
-    ```bash
-    pip install -e '.[dev]'
-    ```
+```bash
+pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.0.0
+```
 
 ## 💻 Usage
 
