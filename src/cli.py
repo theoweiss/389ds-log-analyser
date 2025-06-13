@@ -1,7 +1,7 @@
 import argparse
 import socket
 import sys
-from src.data_model import build_data_model
+from data_model import build_data_model
 
 # Cache for hostname resolution to avoid repeated lookups
 hostname_cache = {}

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "389ds-log-analyser"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
   { name="Thomas Weiss", email="weiss@puzzle-itc.de" },
 ]
@@ -20,6 +20,7 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "pytest-cov>=5.0",
 ]
 
 [tool.setuptools.packages.find]

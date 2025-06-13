@@ -11,7 +11,7 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 You can install this package directly from GitHub using `pip`:
 
 ```bash
-pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.0.0
+pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.1.0
 ```
 
 ## 📦 Offline Installation from a Local Clone
