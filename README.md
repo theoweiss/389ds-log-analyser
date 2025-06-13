@@ -65,6 +65,15 @@ For convenience, each command is also available as a standalone script. This all
 ```
 ```
 
+### Resolving Hostnames
+
+The `--resolve-hostnames` flag can be added to any command to resolve IP addresses to their hostnames. This can make the output easier to read, but may slow down the query.
+
+**Usage:**
+```bash
+389ds-log-analyser src-ip-table -f <log_file> --resolve-hostnames
+```
+
 ### Filtering by Client IP
 
 The `--filter-client-ip` argument allows you to filter the output to show connections only from one or more specific source IPs. This filter applies to all commands.
