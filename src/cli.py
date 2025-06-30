@@ -1,7 +1,9 @@
 import argparse
 import socket
 import sys
-from data_model import build_data_model
+from importlib.metadata import PackageNotFoundError, version
+
+from data_model import LogDataModel, build_data_model
 
 # Cache for hostname resolution to avoid repeated lookups
 hostname_cache = {}
@@ -86,7 +88,10 @@ def resolve_hostname(ip_address):
 def main():
     # Parent parser for common arguments that all subcommands will use
     parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument('-f', '--file', required=True, help='Path to the log file.')
+    input_group = parent_parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument('-f', '--file', help='Path to the log file.')
+    input_group.add_argument('-l', '--load-datamodel', help='Path to a persisted data model file to load.')
+    parent_parser.add_argument('-s', '--save-datamodel', help='Path to save the data model for future use.')
     parent_parser.add_argument('--debug', action='store_true', help='Enable debug output for parsing errors.')
     parent_parser.add_argument(
         '--filter-client-ip',
@@ -101,7 +106,19 @@ def main():
     )
 
     # Main parser
-    parser = argparse.ArgumentParser(description='Analyze 389-ds access logs.')
+    parser = argparse.ArgumentParser(
+        description="389-ds Log Analyser",
+        prog="389ds-log-analyser"
+    )
+    try:
+        pkg_version = version("389ds-log-analyser")
+    except PackageNotFoundError:
+        pkg_version = "dev"
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version=f'%(prog)s {pkg_version}'
+    )
     subparsers = parser.add_subparsers(dest='command', required=True, help='Available commands')
 
     # src_ip_table command
@@ -138,7 +155,16 @@ def main():
 
     args = parser.parse_args()
 
-    connections = build_data_model(args.file, args.debug)
+    if args.load_datamodel:
+        data_model = LogDataModel.load(args.load_datamodel)
+    else:
+        # if --load-datamodel is not used, --file is guaranteed to be present by the mutually exclusive group
+        data_model = build_data_model(args.file, args.debug)
+
+    if args.save_datamodel:
+        data_model.save(args.save_datamodel)
+
+    connections = data_model.connections
 
     if args.filter_client_ip:
         connections = {

@@ -1,9 +1,27 @@
+import pickle
 from datetime import datetime
 
 
 
 # Assuming log_parser.py is in the same directory or accessible
 from log_parser import parse_log_line
+
+class LogDataModel:
+    """Encapsulates the entire data model for easy persistence."""
+    def __init__(self, connections=None):
+        self.connections = connections if connections is not None else {}
+
+    def save(self, file_path):
+        """Saves the data model to a file."""
+        with open(file_path, 'wb') as f:
+            pickle.dump(self.connections, f)
+
+    @classmethod
+    def load(cls, file_path):
+        """Loads a data model from a file."""
+        with open(file_path, 'rb') as f:
+            connections = pickle.load(f)
+        return cls(connections)
 
 class Operation:
     """Represents a single operation within a connection."""
@@ -134,6 +152,6 @@ def build_data_model(log_file_path, debug=False):
             # Pass the entire parsed dictionary as the 'data' payload
             connections[conn_id].add_operation(op_num, op_type, timestamp, parsed, extra_text)
 
-    return connections
+    return LogDataModel(connections)
 
 

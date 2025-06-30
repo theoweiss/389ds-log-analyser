@@ -11,7 +11,7 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 You can install this package directly from GitHub using `pip`:
 
 ```bash
-pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.1.0
+pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.2.0
 ```
 
 ## 📦 Offline Installation from a Local Clone
@@ -85,6 +85,28 @@ The `--filter-client-ip` argument allows you to filter the output to show connec
 
 # Filter for multiple IPs
 389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10 192.168.1.11
+```
+
+### Persisting the Data Model
+
+For very large log files, parsing can be time-consuming. To speed up subsequent analyses, you can save the parsed data model to a file and load it directly in the future.
+
+#### Saving the Data Model
+
+Use the `--save-datamodel` or `-s` argument to save the parsed data model to a file.
+
+**Usage:**
+```bash
+389ds-log-analyser <command> -f <log_file> -s <datamodel_file>
+```
+
+#### Loading the Data Model
+
+Use the `--load-datamodel` or `-l` argument to load a previously saved data model. This option is mutually exclusive with the `-f` or `--file` argument.
+
+**Usage:**
+```bash
+389ds-log-analyser <command> -l <datamodel_file>
 ```
 
 ### 🛠️ Commands

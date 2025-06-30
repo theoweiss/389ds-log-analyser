@@ -8,6 +8,7 @@ from contextlib import redirect_stdout
 from unittest.mock import patch
 
 from cli import print_unique_clients
+from importlib.metadata import version
 
 # Path to the log file used for testing
 LOG_FILE = "test-files/access-comprehensive.log"
@@ -65,6 +66,13 @@ def test_filter_client_ip():
     result = run_command(command)
     assert "192.168.1.11" in result.stdout
     assert "192.168.1.10" not in result.stdout
+
+def test_version_subcommand():
+    """Tests the '--version' argument."""
+    command = [sys.executable, "-m", "cli", "--version"]
+    result = run_command(command)
+    expected_version = version("389ds-log-analyser")
+    assert f"389ds-log-analyser {expected_version}" in result.stdout
 
 def test_hostname_resolution():
     """Tests that hostname resolution works correctly as a unit test."""
