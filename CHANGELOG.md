@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-06-30
+
+### Added
+- Added command-line completion support via `argcomplete`.
+- Added `--filter-bind-dn` to the `open-connections` command to filter by Bind DN.
+
+### Changed
+- The `open-connections` command now displays a summary table of open connections grouped by Bind DN.
+- The `open-connections` and `unique-clients` commands now display the total count of items in their output.
+
 ## [1.3.0] - 2025-06-30
 
 ### Added
@@ -31,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced Lark parser with a regex-based implementation, removing external dependencies.
 - Improved CLI usability by replacing `--query` argument with subcommands.
 
+[1.4.0]: https://github.com/theoweiss/389ds-log-analyser/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/theoweiss/389ds-log-analyser/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/theoweiss/389ds-log-analyser/compare/v1.1.1...v1.2.0
 [1.0.0]: https://github.com/theoweiss/389ds-log-analyser/releases/tag/v1.0.0

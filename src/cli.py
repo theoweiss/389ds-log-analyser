@@ -1,4 +1,5 @@
 import argparse
+import argcomplete
 import socket
 import sys
 from importlib.metadata import PackageNotFoundError, version
@@ -26,23 +27,44 @@ def print_src_ip_table(connections, resolve_hostnames=False):
         unbind_time = conn.unbind_timestamp.isoformat() if conn.unbind_timestamp else "N/A"
         print(f"{source_ip:<20} {bind_time:<35} {unbind_time:<35}")
 
-def print_open_connections_table(connections, resolve_hostnames=False):
+def print_open_connections_table(connections, resolve_hostnames=False, filter_bind_dn=None):
     """Prints a table of open connections with source IP, bind DN, and bind time."""
     print(f"{'Source IP':<20} {'Bind DN':<50} {'Bind Timestamp':<35}")
     print(f"{'--------------------':<20} {'--------------------------------------------------':<50} {'-----------------------------------':<35}")
 
-    sorted_connections = sorted(
+    open_connections = sorted(
         [c for c in connections.values() if c.successful_bind and c.unbind_timestamp is None],
         key=lambda c: c.bind_timestamp
     )
 
-    for conn in sorted_connections:
+    # Create summary before filtering
+    bind_dn_counts = {}
+    for conn in open_connections:
+        dn = conn.bind_dn or "Anonymous"
+        bind_dn_counts[dn] = bind_dn_counts.get(dn, 0) + 1
+
+    # Filter connections for table view if filter is provided
+    if filter_bind_dn:
+        connections_to_print = [c for c in open_connections if c.bind_dn in filter_bind_dn]
+    else:
+        connections_to_print = open_connections
+
+    for conn in connections_to_print:
         source_ip = conn.source_ip or "N/A"
         if resolve_hostnames:
             source_ip = resolve_hostname(source_ip)
         bind_dn = conn.bind_dn or "N/A"
         bind_time = conn.bind_timestamp.isoformat() if conn.bind_timestamp else "N/A"
         print(f"{source_ip:<20} {bind_dn:<50} {bind_time:<35}")
+
+    print(f"\nTotal open connections displayed: {len(connections_to_print)}")
+
+    # Print summary table
+    print("\nSummary of Open Connections by Bind DN:")
+    print(f"{'Bind DN':<70} {'Count'}")
+    print(f"{'----------------------------------------------------------------------':<70} {'-----'}")
+    for dn, count in sorted(bind_dn_counts.items()):
+        print(f"{dn:<70} {count}")
 
 def print_unique_clients(connections, resolve_hostnames=False):
     """Prints a unique list of all client source IPs."""
@@ -55,6 +77,8 @@ def print_unique_clients(connections, resolve_hostnames=False):
         if resolve_hostnames:
             ip = resolve_hostname(ip)
         print(ip)
+
+    print(f"\nTotal unique clients: {len(unique_ips)}")
 
 def print_unindexed_searches_table(connections):
     """Prints a table of partially unindexed searches."""
@@ -136,6 +160,12 @@ def main():
         help='Display a table of connections that are still open.',
         parents=[parent_parser]
     )
+    parser_open.add_argument(
+        '--filter-bind-dn',
+        nargs='+',
+        metavar='BIND_DN',
+        help='Filter open connections by one or more Bind DNs.'
+    )
     parser_open.set_defaults(func=print_open_connections_table)
 
     # unique_clients command
@@ -153,6 +183,8 @@ def main():
         parents=[parent_parser]
     )
     parser_unindexed.set_defaults(func=print_unindexed_searches_table)
+
+    argcomplete.autocomplete(parser)
 
     args = parser.parse_args()
 
@@ -185,7 +217,7 @@ def main():
     if args.command == 'src-ip-table':
         print_src_ip_table(filtered_connections, args.resolve_hostnames)
     elif args.command == 'open-connections':
-        print_open_connections_table(filtered_connections, args.resolve_hostnames)
+        print_open_connections_table(filtered_connections, args.resolve_hostnames, args.filter_bind_dn)
     elif args.command == 'unique-clients':
         print_unique_clients(filtered_connections, args.resolve_hostnames)
     elif args.command == 'unindexed-searches':

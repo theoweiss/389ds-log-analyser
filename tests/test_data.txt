@@ -1,0 +1,3 @@
+[10/Jun/2025:21:18:05.000000Z] conn=99 fd=11 slot=11 connection from 192.168.1.100 to 192.168.1.1
+[10/Jun/2025:21:18:06.100000Z] conn=99 op=0 BIND dn="uid=test,ou=people,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:21:18:06.200000Z] conn=99 op=0 RESULT err=0 tag=97 nentries=1 etime=0.0

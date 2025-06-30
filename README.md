@@ -63,7 +63,30 @@ For convenience, each command is also available as a standalone script. This all
 # Example using the src-ip-table shortcut
 389ds-src-ip-table -f <path_to_log_file>
 ```
+
+### Enabling Command-Line Completion
+
+This project supports command-line completion (tab completion) to help you quickly see available commands and options. To enable it, you first need to activate it for your shell session.
+
+**One-Time Activation:**
+
+Run the following command in your terminal:
+
+```bash
+eval "$(register-python-argcomplete 389ds-log-analyser)"
 ```
+
+After running this, you can type `389ds-log-analyser` followed by a space and press `Tab` to see all available subcommands. This also works for options (e.g., `389ds-log-analyser src-ip-table --<Tab>`).
+
+**Permanent Activation:**
+
+To make the completion permanent, add the command to your shell's startup file (e.g., `~/.bashrc`, `~/.zshrc`):
+
+```bash
+echo 'eval "$(register-python-argcomplete 389ds-log-analyser)"' >> ~/.your_shell_startup_file
+```
+
+Replace `~/.your_shell_startup_file` with the actual path to your shell's configuration file.
 
 ### Resolving Hostnames
 
@@ -107,6 +130,38 @@ Use the `--save-json` or `-j` argument to save the data model in a human-readabl
 **Usage:**
 ```bash
 389ds-log-analyser <command> -f <log_file> -j <datamodel.json>
+```
+
+**JSON Data Model Structure**
+
+The saved JSON file will contain an object where each key is a connection number. The structure is as follows:
+
+```json
+{
+  "123": {
+    "connection_num": 123,
+    "bind_dn": "cn=Directory Manager",
+    "bind_timestamp": "2025-06-10T12:00:00+02:00",
+    "unbind_timestamp": "2025-06-10T12:01:00+02:00",
+    "operations": [
+      {
+        "op_num": 0,
+        "type": "BIND",
+        "timestamp": "2025-06-10T12:00:00+02:00",
+        "data": {
+          "dn": "cn=Directory Manager",
+          "method": 128,
+          "version": 3
+        },
+        "result": {
+          "err": 0,
+          "tag": 97,
+          "nentries": 0
+        }
+      }
+    ]
+  }
+}
 ```
 
 #### Loading the Data Model
@@ -159,6 +214,30 @@ Source IP            Bind DN                                     Bind Timestamp
 ... 
 ```
 
+##### Filtering by Bind DN
+
+The `open-connections` command also supports filtering by one or more Bind DNs using the `--filter-bind-dn` argument. This is useful for focusing on connections from specific users or applications.
+
+**Usage:**
+```bash
+# Filter for a single Bind DN
+389ds-log-analyser open-connections -f <log_file> --filter-bind-dn "uid=test,ou=people,dc=example,dc=com"
+
+# Filter for multiple Bind DNs
+389ds-log-analyser open-connections -f <log_file> --filter-bind-dn "uid=test,ou=people,dc=example,dc=com" "cn=Directory Manager"
+```
+
+When no filter is applied, the command also provides a summary of open connections grouped by Bind DN:
+
+**Example Summary Output:**
+```
+Summary of Open Connections by Bind DN:
+Bind DN                                                                Count
+---------------------------------------------------------------------- -----
+uid=activeuser,ou=people,dc=example,dc=com                             1
+uid=another,ou=people,dc=example,dc=com                                1
+```
+
 #### Show Unique Client IPs (`unique-clients`)
 
 This query scans all connections and prints a unique, sorted list of all source IP addresses that have connected to the server.
@@ -195,58 +274,5 @@ Timestamp                           Conn       Op         Base                  
 2025-06-10T11:06:44.711859+02:00    105        1          dc=example,dc=com              (&(objectClass=ipHost)(ipHostNumber=10.31.50.48))
 ```
 
-### Default JSON Output Structure
 
-The script outputs a JSON array of connection objects with the following structure:
-
-```json
-[
-  {
-    "connection_num": 123,
-    "bind_dn": "cn=Directory Manager",
-    "bind_timestamp": "2025-06-10T12:00:00+02:00",
-    "unbind_timestamp": "2025-06-10T12:01:00+02:00",
-    "operations": [
-      {
-        "op_num": 0,
-        "type": "BIND",
-        "timestamp": "2025-06-10T12:00:00+02:00",
-        "data": {
-          "dn": "cn=Directory Manager",
-          "method": 128,
-          "version": 3
-        },
-        "result": {
-          "err": 0,
-          "tag": 97,
-          "nentries": 0
-        }
-      },
-      {
-        "op_num": 1,
-        "type": "SRCH",
-        "timestamp": "2025-06-10T12:00:30+02:00",
-        "data": {
-          "base": "ou=People,dc=example,dc=com",
-          "scope": 2,
-          "filter": "(uid=testuser)",
-          "attrs": "ALL"
-        },
-        "result": {
-          "err": 0,
-          "tag": 101,
-          "nentries": 1
-        }
-      },
-      {
-        "op_num": 2,
-        "type": "UNBIND",
-        "timestamp": "2025-06-10T12:01:00+02:00",
-        "data": {},
-        "result": null
-      }
-    ]
-  }
-]
-```
 

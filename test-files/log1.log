@@ -1,0 +1,48 @@
+[10/Jun/2025:14:20:01 +0000] conn=17 op=3 BIND dn="uid=admin,ou=People,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:14:20:01 +0000] conn=17 op=3 RESULT err=0 tag=97 nentries=0 etime=0.000001 dn="uid=admin,ou=People,dc=example,dc=com"
+[10/Jun/2025:11:06:44.402678047 +0200] conn=40125 op=2843 SRCH base="dc=example,dc=com" scope=2 filter="(&(objectClass=ipHost)(cn=nv019316412))" attrs="objectClass cn ipHostNumber modifyTimestamp"
+[10/Jun/2025:11:06:44.866521679 +0200] conn=40125 op=2857 RESULT err=0 tag=101 nentries=0 wtime=0.000198798 optime=0.017796181 etime=0.017988680 notes=U details="Partially Unindexed Filter"
+[10/Jun/2025:11:06:52.729607504 +0200] conn=40160 fd=104 slot=104 SSL connection from 10.190.135.26 to 10.31.108.136
+[10/Jun/2025:11:06:52.741654478 +0200] conn=40160 TLS1.3 128-bit AES-GCM
+[10/Jun/2025:11:06:52.741711807 +0200] conn=40160 op=0 BIND dn="" method=sasl version=3 mech=GSS-SPNEGO
+[10/Jun/2025:11:06:52.742578555 +0200] conn=40160 op=0 RESULT err=49 tag=97 nentries=0 wtime=0.011168396 optime=0.000870294 etime=0.012035359 - SASL(-1): generic failure: GSSAPI Error: No credentials were supplied, or the credentials were unavailable or inaccessible (Permission denied)
+[10/Jun/2025:11:06:52.992267223 +0200] conn=40160 op=1 BIND dn="cn=admin,ou=Roles,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:11:06:52.999968561 +0200] conn=40160 op=1 RESULT err=0 tag=97 nentries=0 wtime=0.000099976 optime=0.007739857 etime=0.007836791 dn="cn=admin,ou=roles,dc=example,dc=com"
+[10/Jun/2025:11:06:53.004731303 +0200] conn=40160 op=2 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=b2050518$))" attrs="uid uidNumber gidNumber userPassword gecos homeDirectory loginShell"
+[10/Jun/2025:11:06:53.004914794 +0200] conn=40160 op=2 RESULT err=0 tag=101 nentries=0 wtime=0.000165880 optime=0.000186933 etime=0.000348426
+[10/Jun/2025:11:06:53.012981764 +0200] conn=40160 op=3 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=other))" attrs="uid uidNumber gidNumber userPassword gecos homeDirectory loginShell"
+[10/Jun/2025:11:06:53.013143119 +0200] conn=40160 op=3 RESULT err=0 tag=101 nentries=0 wtime=0.000139871 optime=0.000162989 etime=0.000299595
+[10/Jun/2025:11:07:15.905431649 +0200] conn=40160 op=4 SRCH base="" scope=0 filter="(cn=anyuser)" attrs=ALL
+[10/Jun/2025:11:07:15.905584582 +0200] conn=40160 op=4 RESULT err=0 tag=101 nentries=0 wtime=0.000175962 optime=0.000152103 etime=0.000324340
+[10/Jun/2025:11:07:15.910217155 +0200] conn=40160 op=5 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=qw021043870$))" attrs="uid uidNumber gidNumber userPassword gecos homeDirectory loginShell"
+[10/Jun/2025:11:07:15.910429201 +0200] conn=40160 op=5 RESULT err=0 tag=101 nentries=0 wtime=0.000137451 optime=0.000213949 etime=0.000348026
+[10/Jun/2025:11:08:15.963985032 +0200] conn=40160 op=6 SRCH base="" scope=0 filter="(cn=anyuser)" attrs=ALL
+[10/Jun/2025:11:08:15.964080904 +0200] conn=40160 op=6 RESULT err=0 tag=101 nentries=0 wtime=0.000115263 optime=0.000097169 etime=0.000209330
+[10/Jun/2025:11:08:15.968670579 +0200] conn=40160 op=7 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=other))" attrs="uid uidNumber gidNumber userPassword gecos homeDirectory loginShell"
+[10/Jun/2025:11:08:15.968820344 +0200] conn=40160 op=7 RESULT err=0 tag=101 nentries=0 wtime=0.000113818 optime=0.000151323 etime=0.000262227
+[10/Jun/2025:11:08:16.006550108 +0200] conn=40160 op=8 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=qw021043870$))" attrs="uid uidNumber gidNumber userPassword gecos homeDirectory loginShell"
+[10/Jun/2025:11:08:16.006716055 +0200] conn=40160 op=8 RESULT err=0 tag=101 nentries=0 wtime=0.000119129 optime=0.000163166 etime=0.000279308
+[10/Jun/2025:11:08:39.931839649 +0200] conn=40160 op=9 SRCH base="" scope=0 filter="(cn=anyuser)" attrs=ALL
+[10/Jun/2025:11:08:39.931965694 +0200] conn=40160 op=9 RESULT err=0 tag=101 nentries=0 wtime=0.000139787 optime=0.000128791 etime=0.000264844
+[10/Jun/2025:11:08:39.936583659 +0200] conn=40160 op=10 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=pcuser))" attrs="uid uidNumber gidNumber"
+[10/Jun/2025:11:08:39.936797918 +0200] conn=40160 op=10 RESULT err=0 tag=101 nentries=0 wtime=0.000123936 optime=0.000211034 etime=0.000332077
+[10/Jun/2025:11:10:02.591092894 +0200] conn=40160 op=11 SRCH base="" scope=0 filter="(cn=anyuser)" attrs=ALL
+[10/Jun/2025:11:10:02.591204956 +0200] conn=40160 op=11 RESULT err=0 tag=101 nentries=0 wtime=0.000129142 optime=0.000113787 etime=0.000239775
+[10/Jun/2025:11:10:02.595842536 +0200] conn=40160 op=12 SRCH base="ou=Users,dc=example,dc=com" scope=2 filter="(&(objectClass=posixAccount)(uid=q195537))" attrs="uid uidNumber gidNumber"
+[10/Jun/2025:11:10:02.596196950 +0200] conn=40160 op=12 RESULT err=0 tag=101 nentries=1 wtime=0.000129962 optime=0.000354926 etime=0.000481348
+[10/Jun/2025:11:10:02.601178244 +0200] conn=40160 op=13 SRCH base="ou=Groups,dc=example,dc=com" scope=2 filter="(&(objectClass=posixGroup)(memberUid=q195537))" attrs="gidNumber"
+[10/Jun/2025:11:10:02.601784913 +0200] conn=40160 op=13 RESULT err=0 tag=101 nentries=7 wtime=0.000124607 optime=0.000608102 etime=0.000729309
+[10/Jun/2025:11:11:04.105391971 +0200] conn=40160 op=14 UNBIND
+[10/Jun/2025:11:11:04.105420483 +0200] conn=40160 op=14 fd=104 closed error - U1
+[10/Jun/2025:11:06:45.059368053 +0200] conn=40125 op=2863 SRCH base="dc=example,dc=com" scope=2 filter="(&(objectClass=ipHost)(ipHostNumber=10.31.50.139))" attrs="objectClass cn ipHostNumber modifyTimestamp"
+[10/Jun/2025:11:06:45.071546841 +0200] conn=40125 op=2862 RESULT err=0 tag=101 nentries=0 wtime=0.000200735 optime=0.018806994 etime=0.019003149 notes=U details="Partially Unindexed Filter"
+[10/Jun/2025:11:06:45.074826636 +0200] conn=40125 op=2863 RESULT err=0 tag=101 nentries=0 wtime=0.000178163 optime=0.015458978 etime=0.015629043 notes=U details="Partially Unindexed Filter"
+[10/Jun/2025:11:06:45.078094150 +0200] conn=40125 op=2864 SRCH base="dc=example,dc=com" scope=2 filter="(&(objectClass=ipHost)(cn=nv018910190.example.com))" attrs="objectClass cn ipHostNumber modifyTimestamp"
+[10/Jun/2025:12:57:00.701377103 +0200] conn=40707 op=0 RESULT err=49 tag=97 nentries=0 wtime=0.011255479 optime=0.000873328 etime=0.012125447 - SASL(-1): generic failure: GSSAPI Error: No credentials were supplied, or the credentials were unavailable or inaccessible (Permission denied)
+[10/Jun/2025:12:56:18.861982299 +0200] conn=40704 TLS1.3 128-bit AES-GCM
+[10/Jun/2025:12:54:34.009944380 +0200] conn=40698 fd=101 slot=101 SSL connection from 10.31.109.154 to 10.31.108.136
+[10/Jun/2025:12:54:34.011966666 +0200] conn=40698 TLS1.3 128-bit AES-GCM
+[10/Jun/2025:12:54:34.012023081 +0200] conn=40698 op=0 BIND dn="cn=admin,ou=Roles,dc=example,dc=com" method=128 version=3
+[10/Jun/2025:11:15:39.024477511 +0200] conn=40209 op=2 RESULT err=0 tag=101 nentries=0 wtime=0.000140853 optime=0.000159647 etime=0.000297774 notes=P details="Paged Search" pr_idx=0 pr_cookie=-1
+server.example.com:636 (/etc/dirsrv/slapd-caldap_pr)
+389-Directory/2.0.20 B2024.250.1200
