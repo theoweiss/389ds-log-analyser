@@ -91,7 +91,8 @@ def main():
     input_group = parent_parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', help='Path to the log file.')
     input_group.add_argument('-l', '--load-datamodel', help='Path to a persisted data model file to load.')
-    parent_parser.add_argument('-s', '--save-datamodel', help='Path to save the data model for future use.')
+    parent_parser.add_argument('-p', '--save-pickle', help='Path to save the data model in pickle format.')
+    parent_parser.add_argument('-j', '--save-json', help='Path to save the data model in JSON format.')
     parent_parser.add_argument('--debug', action='store_true', help='Enable debug output for parsing errors.')
     parent_parser.add_argument(
         '--filter-client-ip',
@@ -161,8 +162,15 @@ def main():
         # if --load-datamodel is not used, --file is guaranteed to be present by the mutually exclusive group
         data_model = build_data_model(args.file, args.debug)
 
-    if args.save_datamodel:
-        data_model.save(args.save_datamodel)
+    if args.save_pickle:
+        print(f"Saving data model to {args.save_pickle}...")
+        data_model.save(args.save_pickle)
+        print("Done.")
+
+    if args.save_json:
+        print(f"Saving data model to {args.save_json} as JSON...")
+        data_model.save_json(args.save_json)
+        print("Done.")
 
     connections = data_model.connections
 

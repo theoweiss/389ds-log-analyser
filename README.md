@@ -11,7 +11,7 @@ This project provides a command-line tool to parse and analyze 389 Directory Ser
 You can install this package directly from GitHub using `pip`:
 
 ```bash
-pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.2.0
+pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.3.0
 ```
 
 ## 📦 Offline Installation from a Local Clone
@@ -91,22 +91,35 @@ The `--filter-client-ip` argument allows you to filter the output to show connec
 
 For very large log files, parsing can be time-consuming. To speed up subsequent analyses, you can save the parsed data model to a file and load it directly in the future.
 
-#### Saving the Data Model
+#### Saving the Data Model (Pickle Format)
 
-Use the `--save-datamodel` or `-s` argument to save the parsed data model to a file.
+Use the `--save-pickle` or `-p` argument to save the parsed data model to a file using Python's pickle format. This is the fastest method for saving and loading.
 
 **Usage:**
 ```bash
-389ds-log-analyser <command> -f <log_file> -s <datamodel_file>
+389ds-log-analyser <command> -f <log_file> -p <datamodel.pkl>
+```
+
+#### Saving the Data Model (JSON Format)
+
+Use the `--save-json` or `-j` argument to save the data model in a human-readable JSON format. This is useful for inspecting the data model or for use with other tools.
+
+**Usage:**
+```bash
+389ds-log-analyser <command> -f <log_file> -j <datamodel.json>
 ```
 
 #### Loading the Data Model
 
-Use the `--load-datamodel` or `-l` argument to load a previously saved data model. This option is mutually exclusive with the `-f` or `--file` argument.
+Use the `--load-datamodel` or `-l` argument to load a previously saved data model. The tool will automatically detect the file format (pickle or JSON) based on the file's content and extension. This option is mutually exclusive with the `-f` or `--file` argument.
 
 **Usage:**
 ```bash
-389ds-log-analyser <command> -l <datamodel_file>
+# Load from a pickle file
+389ds-log-analyser <command> -l <datamodel.pkl>
+
+# Load from a JSON file
+389ds-log-analyser <command> -l <datamodel.json>
 ```
 
 ### 🛠️ Commands

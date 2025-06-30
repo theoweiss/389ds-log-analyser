@@ -45,3 +45,22 @@ def test_save_and_load_data_model(model, tmp_path):
     assert loaded_conn.unbind_timestamp == original_conn.unbind_timestamp
     assert len(loaded_conn.operations) == len(original_conn.operations)
 
+def test_save_and_load_json(model, tmp_path):
+    """Tests that the data model can be saved and loaded correctly in JSON format."""
+    file_path = tmp_path / "datamodel.json"
+    model.save_json(file_path)
+
+    assert os.path.exists(file_path)
+
+    loaded_model = LogDataModel.load(file_path)
+
+    assert len(loaded_model.connections) == len(model.connections)
+    original_conn = model.connections[100]
+    loaded_conn = loaded_model.connections[100]
+
+    assert loaded_conn.conn_num == original_conn.conn_num
+    assert loaded_conn.bind_dn == original_conn.bind_dn
+    assert loaded_conn.bind_timestamp == original_conn.bind_timestamp
+    assert loaded_conn.unbind_timestamp == original_conn.unbind_timestamp
+    assert len(loaded_conn.operations) == len(original_conn.operations)
+
