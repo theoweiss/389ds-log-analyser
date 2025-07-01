@@ -89,6 +89,48 @@ def print_unique_clients(connections, resolve_hostnames=False):
 
     print(f"\nTotal unique clients: {len(display_names)}")
 
+def print_connection_details(connections, resolve_hostnames=False, conn_id=None):
+    """Prints detailed operations for one or all connections."""
+
+    # If a specific connection ID is provided, filter for it
+    if conn_id is not None:
+        if conn_id not in connections:
+            print(f"Error: Connection ID {conn_id} not found.")
+            return
+        connections_to_print = {conn_id: connections[conn_id]}
+    else:
+        connections_to_print = connections
+
+    # Sort connections by their number for consistent output
+    sorted_conn_keys = sorted(connections_to_print.keys())
+
+    for key in sorted_conn_keys:
+        conn = connections_to_print[key]
+        display_name = get_display_ip(conn, resolve_hostnames)
+        print(f"\n--- Connection: {conn.conn_num} | Source: {display_name} | Bind DN: {conn.bind_dn or 'N/A'} ---")
+
+        # Sort operations by timestamp or operation number as a fallback
+        sorted_ops = sorted(conn.operations.values(), key=lambda op: (op.timestamp, op.op_num) if op.timestamp else (None, op.op_num))
+
+        for op in sorted_ops:
+            # Format timestamp to be more readable
+            ts = op.timestamp.strftime('%Y-%m-%d %H:%M:%S') if op.timestamp else "N/A"
+
+            if op.op_type == 'SRCH':
+                base = op.data.get('base', 'N/A')
+                sfilter = op.data.get('filter', 'N/A')
+                attrs = op.data.get('attrs', 'N/A')
+                print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Base: {base} | Filter: {sfilter} | Attrs: {attrs}")
+            else:
+                print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts}")
+
+            # if op.result:
+            #     result_str = f"    - Result: {op.result}"
+            #     # Truncate long results for readability
+            #     if len(result_str) > 200:
+            #         result_str = result_str[:197] + "..."
+            #     print(result_str)
+
 def print_unindexed_searches_table(connections):
     """Prints a table of partially unindexed searches."""
     print(f"{'Timestamp':<35} {'Conn':<10} {'Op':<10} {'Base':<30} {'Filter'}")
@@ -193,6 +235,19 @@ def main():
     )
     parser_unindexed.set_defaults(func=print_unindexed_searches_table)
 
+    # connection-details command
+    parser_details = subparsers.add_parser(
+        'connection-details',
+        help='Display detailed operations for connections.',
+        parents=[parent_parser]
+    )
+    parser_details.add_argument(
+        '--conn-id',
+        type=int,
+        help='Display details for a specific connection ID.'
+    )
+    parser_details.set_defaults(func=print_connection_details)
+
     argcomplete.autocomplete(parser)
 
     args = parser.parse_args()
@@ -241,6 +296,10 @@ def main():
         print_unique_clients(filtered_connections, args.resolve_hostnames)
     elif args.command == 'unindexed-searches':
         print_unindexed_searches_table(filtered_connections)
+    elif args.command == 'connection-details':
+        # For this command, we don't need to pass resolve_hostnames to the function
+        # as it is handled by get_display_ip inside the function.
+        print_connection_details(filtered_connections, args.resolve_hostnames, conn_id=getattr(args, 'conn_id', None))
 
 if __name__ == '__main__':
     main()
@@ -263,5 +322,10 @@ def main_unique_clients():
 
 def main_unindexed_searches():
     sys.argv.insert(1, 'unindexed-searches')
+    main()
+
+
+def main_connection_details():
+    sys.argv.insert(1, 'connection-details')
     main()
 

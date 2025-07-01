@@ -40,4 +40,5 @@ pythonpath = ["src"]
 389ds-open-connections = "cli:main_open_connections"
 389ds-unique-clients = "cli:main_unique_clients"
 389ds-unindexed-searches = "cli:main_unindexed_searches"
+389ds-connection-details = "cli:main_connection_details"
 

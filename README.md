@@ -57,6 +57,7 @@ For convenience, each command is also available as a standalone script. This all
 - `389ds-open-connections`
 - `389ds-unique-clients`
 - `389ds-unindexed-searches`
+- `389ds-connection-details`
 
 **Usage:**
 ```bash
@@ -270,6 +271,36 @@ This query is essential for performance tuning. It identifies and lists all sear
 **Usage:**
 ```bash
 389ds-log-analyser unindexed-searches -f <path_to_log_file>
+```
+
+#### Show Connection Details (`connection-details`)
+
+This command provides a detailed, chronological view of all operations within one or more connections. It is highly useful for in-depth debugging and tracing the lifecycle of a client session.
+
+For each connection, it lists every operation (`BIND`, `SRCH`, `MOD`, `DEL`, etc.), including its timestamp and any associated data. For search operations, it explicitly shows the base, filter, and requested attributes.
+
+**Usage:**
+
+```bash
+# Show details for all connections
+389ds-log-analyser connection-details -f <path_to_log_file>
+
+# Show details for a specific connection ID
+389ds-log-analyser connection-details -f <path_to_log_file> --conn-id 123
+```
+
+**Example Output:**
+
+```
+--- Connection: 123 | Source: client-a.example.com | Bind DN: cn=Directory Manager ---
+  Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00
+    - Result: {'err': 0, 'tag': 97, 'nentries': 0}
+  Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01
+    - Base: ou=people,dc=example,dc=com
+    - Filter: (uid=testuser)
+    - Attrs: cn uid mail
+    - Result: {'err': 0, 'tag': 101, 'nentries': 1}
+...
 ```
 
 **Example Output:**

@@ -110,11 +110,33 @@ def test_hostname_resolution():
     assert "host2.example.com" in output
     assert "192.168.1.10" not in output
 
+def test_connection_details_subcommand():
+    """Tests the 'connection-details' subcommand."""
+    # Test the command with all connections
+    command = [sys.executable, "-m", "cli", "connection-details", "-f", LOG_FILE]
+    result_all = run_command(command)
+    assert "--- Connection:" in result_all.stdout
+    assert "Op:" in result_all.stdout
+    assert "SRCH" in result_all.stdout
+
+    # Test filtering for a single, valid connection ID
+    command_single = [sys.executable, "-m", "cli", "connection-details", "-f", LOG_FILE, "--conn-id", "100"]
+    result_single = run_command(command_single)
+    assert "--- Connection: 100" in result_single.stdout
+    assert len(result_single.stdout) < len(result_all.stdout)
+
+    # Test with an invalid connection ID
+    command_invalid = [sys.executable, "-m", "cli", "connection-details", "-f", LOG_FILE, "--conn-id", "99999"]
+    result_invalid = run_command(command_invalid)
+    assert "Error: Connection ID 99999 not found." in result_invalid.stdout
+
+
 @pytest.mark.parametrize("script_name", [
     "389ds-src-ip-table",
     "389ds-open-connections",
     "389ds-unique-clients",
     "389ds-unindexed-searches",
+    "389ds-connection-details",
 ])
 def test_standalone_scripts(script_name):
     """Tests the standalone command-line scripts."""
