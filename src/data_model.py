@@ -110,6 +110,7 @@ class Connection:
         self.successful_bind = False
         self.operations = {}
         self.source_ip = None
+        self.source_hostname = None
         self.destination_ip = None
 
     def add_operation(self, op_num, op_type, timestamp, data, extra_text):
@@ -154,6 +155,7 @@ class Connection:
         return {
             "connection_num": self.conn_num,
             "source_ip": self.source_ip,
+            "source_hostname": self.source_hostname,
             "destination_ip": self.destination_ip,
             "bind_dn": self.bind_dn,
             "bind_timestamp": self.bind_timestamp.isoformat() if self.bind_timestamp else None,
@@ -166,6 +168,7 @@ class Connection:
         """Creates a Connection from a dictionary."""
         conn = cls(data['connection_num'])
         conn.source_ip = data.get('source_ip')
+        conn.source_hostname = data.get('source_hostname')
         conn.destination_ip = data.get('destination_ip')
         conn.bind_dn = data.get('bind_dn')
         conn.bind_timestamp = datetime.fromisoformat(data['bind_timestamp']) if data.get('bind_timestamp') else None

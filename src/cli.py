@@ -9,10 +9,21 @@ from data_model import LogDataModel, build_data_model
 # Cache for hostname resolution to avoid repeated lookups
 hostname_cache = {}
 
+def get_display_ip(conn, resolve_hostnames=False):
+    """Gets the display string for a connection's source IP, using hostname if available/requested."""
+    if resolve_hostnames:
+        # Use persisted hostname if available
+        if conn.source_hostname:
+            return conn.source_hostname
+        # Otherwise, resolve the IP (uses cache)
+        if conn.source_ip:
+            return resolve_hostname(conn.source_ip)
+    return conn.source_ip or "N/A"
+
 def print_src_ip_table(connections, resolve_hostnames=False):
     """Prints a table of connections with source IP, bind, and unbind times."""
-    print(f"{'Source IP':<20} {'Bind Timestamp':<35} {'Unbind Timestamp':<35}")
-    print(f"{'--------------------':<20} {'-----------------------------------':<35} {'-----------------------------------':<35}")
+    print(f"{'Source IP/Hostname':<40} {'Bind Timestamp':<35} {'Unbind Timestamp':<35}")
+    print(f"{'----------------------------------------':<40} {'-----------------------------------':<35} {'-----------------------------------':<35}")
 
     sorted_connections = sorted(
         [c for c in connections.values() if c.successful_bind and c.unbind_timestamp and c.bind_timestamp],
@@ -20,17 +31,15 @@ def print_src_ip_table(connections, resolve_hostnames=False):
     )
 
     for conn in sorted_connections:
-        source_ip = conn.source_ip or "N/A"
-        if resolve_hostnames:
-            source_ip = resolve_hostname(source_ip)
+        display_name = get_display_ip(conn, resolve_hostnames)
         bind_time = conn.bind_timestamp.isoformat() if conn.bind_timestamp else "N/A"
         unbind_time = conn.unbind_timestamp.isoformat() if conn.unbind_timestamp else "N/A"
-        print(f"{source_ip:<20} {bind_time:<35} {unbind_time:<35}")
+        print(f"{display_name:<40} {bind_time:<35} {unbind_time:<35}")
 
 def print_open_connections_table(connections, resolve_hostnames=False, filter_bind_dn=None):
     """Prints a table of open connections with source IP, bind DN, and bind time."""
-    print(f"{'Source IP':<20} {'Bind DN':<50} {'Bind Timestamp':<35}")
-    print(f"{'--------------------':<20} {'--------------------------------------------------':<50} {'-----------------------------------':<35}")
+    print(f"{'Source IP/Hostname':<40} {'Bind DN':<50} {'Bind Timestamp':<35}")
+    print(f"{'----------------------------------------':<40} {'--------------------------------------------------':<50} {'-----------------------------------':<35}")
 
     open_connections = sorted(
         [c for c in connections.values() if c.successful_bind and c.unbind_timestamp is None],
@@ -50,12 +59,10 @@ def print_open_connections_table(connections, resolve_hostnames=False, filter_bi
         connections_to_print = open_connections
 
     for conn in connections_to_print:
-        source_ip = conn.source_ip or "N/A"
-        if resolve_hostnames:
-            source_ip = resolve_hostname(source_ip)
+        display_name = get_display_ip(conn, resolve_hostnames)
         bind_dn = conn.bind_dn or "N/A"
         bind_time = conn.bind_timestamp.isoformat() if conn.bind_timestamp else "N/A"
-        print(f"{source_ip:<20} {bind_dn:<50} {bind_time:<35}")
+        print(f"{display_name:<40} {bind_dn:<50} {bind_time:<35}")
 
     print(f"\nTotal open connections displayed: {len(connections_to_print)}")
 
@@ -67,18 +74,20 @@ def print_open_connections_table(connections, resolve_hostnames=False, filter_bi
         print(f"{dn:<70} {count}")
 
 def print_unique_clients(connections, resolve_hostnames=False):
-    """Prints a unique list of all client source IPs."""
-    print("Unique Client IPs")
-    print("-----------------")
-    
-    unique_ips = sorted(list(set(c.source_ip for c in connections.values() if c.source_ip)))
-    
-    for ip in unique_ips:
-        if resolve_hostnames:
-            ip = resolve_hostname(ip)
-        print(ip)
+    """Prints a unique list of all client source IPs or hostnames."""
+    header = "Unique Client Hostnames" if resolve_hostnames else "Unique Client IPs"
+    print(header)
+    print("-" * len(header))
 
-    print(f"\nTotal unique clients: {len(unique_ips)}")
+    display_names = set()
+    for conn in connections.values():
+        if conn.source_ip:
+            display_names.add(get_display_ip(conn, resolve_hostnames))
+
+    for name in sorted(list(display_names)):
+        print(name)
+
+    print(f"\nTotal unique clients: {len(display_names)}")
 
 def print_unindexed_searches_table(connections):
     """Prints a table of partially unindexed searches."""
@@ -193,6 +202,16 @@ def main():
     else:
         # if --load-datamodel is not used, --file is guaranteed to be present by the mutually exclusive group
         data_model = build_data_model(args.file, args.debug)
+
+    # If resolving hostnames is requested, do it now. This will allow the
+    # resolved names to be persisted if a save option is also used.
+    if args.resolve_hostnames:
+        print("Resolving hostnames for all connections...")
+        for conn in data_model.connections.values():
+            if conn.source_ip:
+                # This will populate the source_hostname attribute
+                conn.source_hostname = resolve_hostname(conn.source_ip)
+        print("Done.")
 
     if args.save_pickle:
         print(f"Saving data model to {args.save_pickle}...")

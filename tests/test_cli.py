@@ -31,14 +31,16 @@ def test_src_ip_table_subcommand():
     ]
     result = run_command(command)
     
-    assert "Source IP            Bind Timestamp                      Unbind Timestamp" in result.stdout
+    header = f"{'Source IP/Hostname':<40} {'Bind Timestamp':<35} {'Unbind Timestamp':<35}"
+    assert header in result.stdout
     assert "192.168.1.10" in result.stdout
 
 def test_open_connections_subcommand():
     """Tests the 'open-connections' subcommand."""
     command = [sys.executable, "-m", "cli", "open-connections", "-f", LOG_FILE]
     result = run_command(command)
-    assert "Source IP            Bind DN                                            Bind Timestamp" in result.stdout
+    header = f"{'Source IP/Hostname':<40} {'Bind DN':<50} {'Bind Timestamp':<35}"
+    assert header in result.stdout
     assert "192.168.1.12" in result.stdout
 
 def test_unique_clients_subcommand():
@@ -80,6 +82,7 @@ def test_hostname_resolution():
     class MockConnection:
         def __init__(self, ip):
             self.source_ip = ip
+            self.source_hostname = None  # Add the new attribute
 
     connections = {
         1: MockConnection("192.168.1.10"),

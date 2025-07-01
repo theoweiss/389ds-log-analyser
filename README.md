@@ -90,7 +90,9 @@ Replace `~/.your_shell_startup_file` with the actual path to your shell's config
 
 ### Resolving Hostnames
 
-The `--resolve-hostnames` flag can be added to any command to resolve IP addresses to their hostnames. This can make the output easier to read, but may slow down the query.
+The `--resolve-hostnames` flag can be added to any command to resolve IP addresses to their hostnames. This can make the output easier to read, but may slow down the initial query.
+
+When used with a save option (`--save-pickle` or `--save-json`), the resolved hostnames are persisted in the data model. This means you only need to resolve them once, and subsequent loads from the saved file will be fast.
 
 **Usage:**
 ```bash
@@ -140,6 +142,9 @@ The saved JSON file will contain an object where each key is a connection number
 {
   "123": {
     "connection_num": 123,
+    "source_ip": "192.168.1.50",
+    "source_hostname": "client-a.example.com",
+    "destination_ip": "10.0.0.1",
     "bind_dn": "cn=Directory Manager",
     "bind_timestamp": "2025-06-10T12:00:00+02:00",
     "unbind_timestamp": "2025-06-10T12:01:00+02:00",
