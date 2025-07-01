@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-07-01
+
+### Added
+- New `connection-details` command and `389ds-connection-details` shortcut to display all operations for one or all connections, including search details.
+- Ability to filter for a specific connection using `--conn-id`.
+- Hostname persistence in the data model; resolved hostnames are now saved and reused.
+- Table formatting improvements to accommodate hostnames.
+- Timestamp formatting in `connection-details` output now accurate to the second for readability.
+
+### Changed
+- Updated documentation to cover new features and options.
+- Expanded and improved test coverage for new features and CLI commands.
+
 ## [1.4.0] - 2025-06-30
 
 ### Added
