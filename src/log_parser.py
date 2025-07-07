@@ -1,6 +1,7 @@
 import argparse
 import re
 from datetime import datetime, timezone, timedelta
+from typing import Optional, Dict, Any
 
 # Regex to capture the timestamp and the rest of the message from a log line.
 LOG_LINE_RE = re.compile(r'^\[(.*?)\] (.*)$')
@@ -18,7 +19,7 @@ MONTH_MAP = {
     'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
 }
 
-def parse_timestamp(ts_str):
+def parse_timestamp(ts_str: str) -> Optional[datetime]:
     """Converts a raw timestamp string into a timezone-aware datetime object."""
     match = TIMESTAMP_RE.match(ts_str)
     if not match:
@@ -54,7 +55,7 @@ def parse_timestamp(ts_str):
     
     return dt
 
-def parse_key_value_message(message):
+def parse_key_value_message(message: str) -> Dict[str, Any]:
     """
     Parses a message string for key-value pairs, operation type, and extra text.
     It robustly handles logs where the operation type is mixed with key-value pairs.
@@ -62,7 +63,7 @@ def parse_key_value_message(message):
     # This regex is the core of the message parsing.
     # It finds key-value pairs, where values can be unquoted, quoted, or numeric.
     kv_pattern = re.compile(r'(\w+)=("(?:[^"\\]|\\.)*"|\S+)')
-    data = {}
+    data: Dict[str, Any] = {}
     
     # Find all k-v pairs and the text that is NOT a k-v pair
     last_end = 0
@@ -134,7 +135,7 @@ def parse_key_value_message(message):
 
     return data
 
-def parse_log_line(line):
+def parse_log_line(line: str) -> Optional[Dict[str, Any]]:
     """
     Parses a single log line into a structured dictionary.
     Returns None if the line format is invalid.
@@ -154,7 +155,7 @@ def parse_log_line(line):
     
     return parsed_message
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Parse 389-ds access logs.")
     parser.add_argument("-f", "--file", help="Path to the log file to parse.")
     parser.add_argument("-l", "--line", help="A single log line to parse.")

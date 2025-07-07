@@ -3,13 +3,14 @@ import argcomplete
 import socket
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from typing import Optional, Dict, Any, List, Union
 
 from data_model import LogDataModel, build_data_model
 
 # Cache for hostname resolution to avoid repeated lookups
-hostname_cache = {}
+hostname_cache: Dict[str, str] = {}
 
-def get_display_ip(conn, resolve_hostnames=False):
+def get_display_ip(conn: Any, resolve_hostnames: bool = False) -> str:
     """Gets the display string for a connection's source IP, using hostname if available/requested."""
     if resolve_hostnames:
         # Use persisted hostname if available
@@ -20,7 +21,7 @@ def get_display_ip(conn, resolve_hostnames=False):
             return resolve_hostname(conn.source_ip)
     return conn.source_ip or "N/A"
 
-def print_src_ip_table(connections, resolve_hostnames=False):
+def print_src_ip_table(connections: Dict[int, Any], resolve_hostnames: bool = False) -> None:
     """Prints a table of connections with source IP, bind, and unbind times."""
     print(f"{'Source IP/Hostname':<40} {'Bind Timestamp':<35} {'Unbind Timestamp':<35}")
     print(f"{'----------------------------------------':<40} {'-----------------------------------':<35} {'-----------------------------------':<35}")
@@ -36,7 +37,7 @@ def print_src_ip_table(connections, resolve_hostnames=False):
         unbind_time = conn.unbind_timestamp.isoformat() if conn.unbind_timestamp else "N/A"
         print(f"{display_name:<40} {bind_time:<35} {unbind_time:<35}")
 
-def print_open_connections_table(connections, resolve_hostnames=False, filter_bind_dn=None):
+def print_open_connections_table(connections: Dict[int, Any], resolve_hostnames: bool = False, filter_bind_dn: Optional[List[str]] = None) -> None:
     """Prints a table of open connections with source IP, bind DN, and bind time."""
     print(f"{'Source IP/Hostname':<40} {'Bind DN':<50} {'Bind Timestamp':<35}")
     print(f"{'----------------------------------------':<40} {'--------------------------------------------------':<50} {'-----------------------------------':<35}")
@@ -47,7 +48,7 @@ def print_open_connections_table(connections, resolve_hostnames=False, filter_bi
     )
 
     # Create summary before filtering
-    bind_dn_counts = {}
+    bind_dn_counts: Dict[str, int] = {}
     for conn in open_connections:
         dn = conn.bind_dn or "Anonymous"
         bind_dn_counts[dn] = bind_dn_counts.get(dn, 0) + 1
@@ -73,13 +74,13 @@ def print_open_connections_table(connections, resolve_hostnames=False, filter_bi
     for dn, count in sorted(bind_dn_counts.items()):
         print(f"{dn:<70} {count}")
 
-def print_unique_clients(connections, resolve_hostnames=False):
+def print_unique_clients(connections: Dict[int, Any], resolve_hostnames: bool = False) -> None:
     """Prints a unique list of all client source IPs or hostnames."""
     header = "Unique Client Hostnames" if resolve_hostnames else "Unique Client IPs"
     print(header)
     print("-" * len(header))
 
-    display_names = set()
+    display_names: set = set()
     for conn in connections.values():
         if conn.source_ip:
             display_names.add(get_display_ip(conn, resolve_hostnames))
@@ -89,7 +90,7 @@ def print_unique_clients(connections, resolve_hostnames=False):
 
     print(f"\nTotal unique clients: {len(display_names)}")
 
-def print_connection_details(connections, resolve_hostnames=False, conn_id=None):
+def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None) -> None:
     """Prints detailed operations for one or all connections."""
 
     # If a specific connection ID is provided, filter for it
@@ -131,12 +132,12 @@ def print_connection_details(connections, resolve_hostnames=False, conn_id=None)
             #         result_str = result_str[:197] + "..."
             #     print(result_str)
 
-def print_unindexed_searches_table(connections):
+def print_unindexed_searches_table(connections: Dict[int, Any]) -> None:
     """Prints a table of partially unindexed searches."""
     print(f"{'Timestamp':<35} {'Conn':<10} {'Op':<10} {'Base':<30} {'Filter'}")
     print(f"{'-----------------------------------':<35} {'----------':<10} {'----------':<10} {'------------------------------':<30} {'-'*40}")
 
-    unindexed_searches = []
+    unindexed_searches: List[Any] = []
     for conn in connections.values():
         for op in conn.operations.values():
             if op.op_type == 'SRCH' and op.result and op.result.get('details') == 'Partially Unindexed Filter':
@@ -147,7 +148,7 @@ def print_unindexed_searches_table(connections):
     for ts, conn_num, op_num, base, sfilter in unindexed_searches:
         print(f"{ts.isoformat():<35} {conn_num:<10} {op_num:<10} {base:<30} {sfilter}")
 
-def resolve_hostname(ip_address):
+def resolve_hostname(ip_address: str) -> str:
     """Resolves an IP address to a hostname, with caching."""
     if ip_address in hostname_cache:
         return hostname_cache[ip_address]
@@ -160,7 +161,7 @@ def resolve_hostname(ip_address):
         hostname_cache[ip_address] = ip_address
         return ip_address
 
-def main():
+def main() -> None:
     # Parent parser for common arguments that all subcommands will use
     parent_parser = argparse.ArgumentParser(add_help=False)
     input_group = parent_parser.add_mutually_exclusive_group(required=True)
@@ -301,31 +302,26 @@ def main():
         # as it is handled by get_display_ip inside the function.
         print_connection_details(filtered_connections, args.resolve_hostnames, conn_id=getattr(args, 'conn_id', None))
 
-if __name__ == '__main__':
-    main()
-
-
-def main_src_ip_table():
+def main_src_ip_table() -> None:
     sys.argv.insert(1, 'src-ip-table')
     main()
 
-
-def main_open_connections():
+def main_open_connections() -> None:
     sys.argv.insert(1, 'open-connections')
     main()
 
-
-def main_unique_clients():
+def main_unique_clients() -> None:
     sys.argv.insert(1, 'unique-clients')
     main()
 
-
-def main_unindexed_searches():
+def main_unindexed_searches() -> None:
     sys.argv.insert(1, 'unindexed-searches')
     main()
 
-
-def main_connection_details():
+def main_connection_details() -> None:
     sys.argv.insert(1, 'connection-details')
+    main()
+
+if __name__ == '__main__':
     main()
 

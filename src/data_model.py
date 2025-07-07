@@ -1,6 +1,7 @@
 import pickle
 import json
 from datetime import datetime
+from typing import Optional, Dict, Any, List, Type, ClassVar
 
 
 
@@ -9,25 +10,27 @@ from log_parser import parse_log_line
 
 class LogDataModel:
     """Encapsulates the entire data model for easy persistence."""
-    def __init__(self, connections=None):
+    connections: Dict[int, 'Connection']
+
+    def __init__(self, connections: Optional[Dict[int, 'Connection']] = None) -> None:
         self.connections = connections if connections is not None else {}
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[int, Any]:
         """Converts the entire data model to a dictionary."""
         return {conn_num: conn.to_dict() for conn_num, conn in self.connections.items()}
 
-    def save(self, file_path):
+    def save(self, file_path: str) -> None:
         """Saves the data model to a pickle file."""
         with open(file_path, 'wb') as f:
             pickle.dump(self, f)
 
-    def save_json(self, file_path):
+    def save_json(self, file_path: str) -> None:
         """Saves the data model to a JSON file."""
         with open(file_path, 'w') as f:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
-    def load(cls, file_path):
+    def load(cls: Type['LogDataModel'], file_path: str) -> 'LogDataModel':
         """Loads a data model from a file, detecting the format from the extension."""
         if str(file_path).endswith('.json'):
             with open(file_path, 'r') as f:
@@ -44,14 +47,21 @@ class LogDataModel:
             return loaded_data # It's a full LogDataModel object
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls: Type['LogDataModel'], data: Dict[str, Any]) -> 'LogDataModel':
         """Creates a LogDataModel from a dictionary (e.g., from JSON)."""
         connections = {int(k): Connection.from_dict(v) for k, v in data.items()}
         return cls(connections)
 
 class Operation:
     """Represents a single operation within a connection."""
-    def __init__(self, op_num, op_type, timestamp, data, extra_text=None):
+    op_num: int
+    op_type: str
+    timestamp: Optional[datetime]
+    data: Dict[str, Any]
+    extra_text: Optional[str]
+    result: Optional[Any]
+
+    def __init__(self, op_num: int, op_type: str, timestamp: Optional[datetime], data: Dict[str, Any], extra_text: Optional[str] = None) -> None:
         self.op_num = op_num
         self.op_type = op_type
         self.timestamp = timestamp
@@ -59,7 +69,7 @@ class Operation:
         self.extra_text = extra_text
         self.result = None
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Converts the operation to a dictionary for JSON serialization."""
         # The 'data' and 'result' fields are dictionaries that might contain
         # a datetime object from the parser. We need to convert it to a string.
@@ -67,7 +77,7 @@ class Operation:
         if 'timestamp' in data_payload and isinstance(data_payload.get('timestamp'), datetime):
             data_payload['timestamp'] = data_payload['timestamp'].isoformat()
 
-        data_dict = {
+        data_dict: Dict[str, Any] = {
             "op_num": self.op_num,
             "type": self.op_type,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
@@ -86,7 +96,7 @@ class Operation:
         return data_dict
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls: Type['Operation'], data: Dict[str, Any]) -> 'Operation':
         """Creates an Operation from a dictionary."""
         # Convert timestamp string back to datetime object
         timestamp = datetime.fromisoformat(data['timestamp']) if data.get('timestamp') else None
@@ -102,7 +112,17 @@ class Operation:
 
 class Connection:
     """Represents a client connection and its operations."""
-    def __init__(self, conn_num):
+    conn_num: int
+    bind_timestamp: Optional[datetime]
+    unbind_timestamp: Optional[datetime]
+    bind_dn: Optional[str]
+    successful_bind: bool
+    operations: Dict[int, Operation]
+    source_ip: Optional[str]
+    source_hostname: Optional[str]
+    destination_ip: Optional[str]
+
+    def __init__(self, conn_num: int) -> None:
         self.conn_num = conn_num
         self.bind_timestamp = None
         self.unbind_timestamp = None
@@ -113,7 +133,7 @@ class Connection:
         self.source_hostname = None
         self.destination_ip = None
 
-    def add_operation(self, op_num, op_type, timestamp, data, extra_text):
+    def add_operation(self, op_num: Optional[int], op_type: str, timestamp: Optional[datetime], data: Dict[str, Any], extra_text: Optional[str]) -> None:
         """Adds or updates an operation in the connection."""
         # Handle connection info lines, which describe the connection itself.
         if op_type == "CONNECTION_INFO":
@@ -149,8 +169,7 @@ class Connection:
             if op_num not in self.operations:
                 self.operations[op_num] = Operation(op_num, op_type, timestamp, data, extra_text)
 
-
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Converts the connection to a dictionary for JSON serialization."""
         return {
             "connection_num": self.conn_num,
@@ -164,7 +183,7 @@ class Connection:
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls: Type['Connection'], data: Dict[str, Any]) -> 'Connection':
         """Creates a Connection from a dictionary."""
         conn = cls(data['connection_num'])
         conn.source_ip = data.get('source_ip')
@@ -185,11 +204,9 @@ class Connection:
         
         return conn
 
-def build_data_model(log_file_path, debug=False):
+def build_data_model(log_file_path: str, debug: bool = False) -> LogDataModel:
     """Parses a log file and builds a structured data model of connections."""
-
-
-    connections = {}
+    connections: Dict[int, Connection] = {}
 
     with open(log_file_path, 'r') as f:
         for line in f:
