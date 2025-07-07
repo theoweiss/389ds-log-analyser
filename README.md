@@ -1,314 +1,468 @@
 # 389ds-log-analyser
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
+![License](https://img.shields.io/badge/license-GPL%20v3-blue.svg)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 [![Tests](https://github.com/theoweiss/389ds-log-analyser/actions/workflows/ci.yml/badge.svg)](https://github.com/theoweiss/389ds-log-analyser/actions/workflows/ci.yml)
+[![Type Hints](https://img.shields.io/badge/typing-typed-green.svg)](https://mypy-lang.org/)
 
-This project provides a command-line tool to parse and analyze 389 Directory Server access logs. It can identify and report on completed connections, open connections, unindexed searches, and more.
+A powerful command-line tool for parsing and analyzing 389 Directory Server (formerly Red Hat Directory Server) access logs. This tool helps system administrators and developers monitor LDAP server performance, identify issues, and optimize directory server configurations.
+
+## 🚀 Features
+
+- **Multiple Analysis Commands**: Analyze completed connections, open connections, unique clients, unindexed searches, and detailed operation traces
+- **Performance Optimization**: Identify unindexed searches that may impact server performance
+- **Flexible Output**: Support for both human-readable tables and JSON export
+- **Data Persistence**: Save parsed data models for faster subsequent analysis of large log files
+- **Hostname Resolution**: Resolve IP addresses to hostnames with caching for better readability
+- **Advanced Filtering**: Filter results by client IP addresses or bind DNs
+- **Comprehensive CLI**: Tab completion support and multiple entry points for convenience
+- **Type Safety**: Fully type-annotated codebase for better development experience
+
+## 📋 Table of Contents
+
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [Commands](#-commands)
+- [Advanced Features](#-advanced-features)
+- [Examples](#-examples)
+- [API Documentation](#-api-documentation)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 💾 Installation
 
-You can install this package directly from GitHub using `pip`:
+### From GitHub (Recommended)
 
 ```bash
-pip install git+https://github.com/theoweiss/389ds-log-analyser.git@v1.3.0
+pip install git+https://github.com/theoweiss/389ds-log-analyser.git
 ```
 
-## 📦 Offline Installation from a Local Clone
-
-If you need to install the package on a machine that does not have internet access, you can do so from a local clone.
-
-### Step 1: On a Machine With Internet Access
-
-First, get a copy of the repository.
+### Development Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/theoweiss/389ds-log-analyser.git
+cd 389ds-log-analyser
+pip install -e .
 ```
 
-### Step 2: Transfer to the Offline Machine
+### Offline Installation
 
-Copy the entire `389ds-log-analyser` directory to the offline machine using a USB drive or other method.
+For environments without internet access:
 
-### Step 3: On the Offline Machine
+1. **On a machine with internet access:**
+   ```bash
+   git clone https://github.com/theoweiss/389ds-log-analyser.git
+   cd 389ds-log-analyser
+   pip download -r requirements.txt -d dependencies/
+   ```
 
-Navigate into the project directory and use `pip` to install it. The `--no-deps` flag is important to prevent `pip` from trying to connect to the internet to resolve dependencies.
+2. **Transfer the entire directory to the offline machine**
+
+3. **On the offline machine:**
+   ```bash
+   cd 389ds-log-analyser
+   pip install --no-index --find-links dependencies/ .
+   ```
+
+## 🚀 Quick Start
 
 ```bash
-cd 389ds-log-analyser
-pip install --no-deps .
-```
+# Analyze completed connections
+389ds-log-analyser src-ip-table -f /var/log/dirsrv/slapd-instance/access
 
-> **Note:** This works because the base package currently has no external dependencies. If dependencies are added in the future, they would need to be downloaded separately on the online machine and transferred along with the project.
+# Find performance issues
+389ds-log-analyser unindexed-searches -f /var/log/dirsrv/slapd-instance/access
+
+# Monitor active sessions
+389ds-log-analyser open-connections -f /var/log/dirsrv/slapd-instance/access
+
+# Get detailed operation trace for debugging
+389ds-log-analyser connection-details -f /var/log/dirsrv/slapd-instance/access --conn-id 12345
+```
 
 ## 💻 Usage
 
-The primary command is `389ds-log-analyser`. It requires a log file to be specified with the `-f` or `--file` argument.
+### Basic Syntax
 
 ```bash
-389ds-log-analyser <command> -f <path_to_log_file> [options]
-
-### Shortcut Commands
-
-For convenience, each command is also available as a standalone script. This allows for more direct invocation of a specific query.
-
-- `389ds-src-ip-table`
-- `389ds-open-connections`
-- `389ds-unique-clients`
-- `389ds-unindexed-searches`
-- `389ds-connection-details`
-
-**Usage:**
-```bash
-# Example using the src-ip-table shortcut
-389ds-src-ip-table -f <path_to_log_file>
+389ds-log-analyser <command> -f <log_file> [options]
 ```
 
-### Enabling Command-Line Completion
+### Global Options
 
-This project supports command-line completion (tab completion) to help you quickly see available commands and options. To enable it, you first need to activate it for your shell session.
+| Option | Description |
+|--------|-------------|
+| `-f, --file` | Path to the 389ds access log file |
+| `-l, --load-datamodel` | Load a previously saved data model (mutually exclusive with `-f`) |
+| `-p, --save-pickle` | Save parsed data model as pickle file for faster subsequent analysis |
+| `-j, --save-json` | Save parsed data model as JSON file for inspection or integration |
+| `--resolve-hostnames` | Resolve IP addresses to hostnames (may slow initial processing) |
+| `--filter-client-ip` | Filter results to specific client IP address(es) |
+| `--debug` | Enable debug output for parsing errors |
+| `--version` | Show version information |
 
-**One-Time Activation:**
+### Standalone Commands
 
-Run the following command in your terminal:
+For convenience, each command is available as a standalone script:
 
 ```bash
+389ds-src-ip-table -f <log_file>
+389ds-open-connections -f <log_file>
+389ds-unique-clients -f <log_file>
+389ds-unindexed-searches -f <log_file>
+389ds-connection-details -f <log_file>
+```
+
+### Command Completion
+
+Enable tab completion for better CLI experience:
+
+```bash
+# Temporary activation
 eval "$(register-python-argcomplete 389ds-log-analyser)"
+
+# Permanent activation (add to ~/.bashrc or ~/.zshrc)
+echo 'eval "$(register-python-argcomplete 389ds-log-analyser)"' >> ~/.bashrc
 ```
 
-After running this, you can type `389ds-log-analyser` followed by a space and press `Tab` to see all available subcommands. This also works for options (e.g., `389ds-log-analyser src-ip-table --<Tab>`).
+## 🛠️ Commands
 
-**Permanent Activation:**
+### `src-ip-table` - Completed Connections
 
-To make the completion permanent, add the command to your shell's startup file (e.g., `~/.bashrc`, `~/.zshrc`):
+Shows all connections that successfully bound and were properly closed.
 
 ```bash
-echo 'eval "$(register-python-argcomplete 389ds-log-analyser)"' >> ~/.your_shell_startup_file
+389ds-log-analyser src-ip-table -f access.log
 ```
 
-Replace `~/.your_shell_startup_file` with the actual path to your shell's configuration file.
+**Output:**
+```
+Source IP/Hostname                       Bind Timestamp                      Unbind Timestamp                   
+---------------------------------------- ----------------------------------- -----------------------------------
+192.168.1.10                             2025-06-10T21:18:06.100000+00:00    2025-06-10T21:18:07.200000+00:00
+client-server.example.com                2025-06-10T21:18:08.100000+00:00    2025-06-10T21:18:11+00:00
+```
 
-### Resolving Hostnames
+### `open-connections` - Active Sessions
 
-The `--resolve-hostnames` flag can be added to any command to resolve IP addresses to their hostnames. This can make the output easier to read, but may slow down the initial query.
+Displays currently active (not yet closed) connections.
 
-When used with a save option (`--save-pickle` or `--save-json`), the resolved hostnames are persisted in the data model. This means you only need to resolve them once, and subsequent loads from the saved file will be fast.
-
-**Usage:**
 ```bash
-389ds-log-analyser src-ip-table -f <log_file> --resolve-hostnames
+389ds-log-analyser open-connections -f access.log
 ```
 
-### Filtering by Client IP
+**Options:**
+- `--filter-bind-dn`: Filter by specific bind DN(s)
 
-The `--filter-client-ip` argument allows you to filter the output to show connections only from one or more specific source IPs. This filter applies to all commands.
-
-**Usage:**
-```bash
-# Filter for a single IP
-389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10
-
-# Filter for multiple IPs
-389ds-log-analyser src-ip-table -f <log_file> --filter-client-ip 192.168.1.10 192.168.1.11
+**Output:**
 ```
+Source IP/Hostname                       Bind DN                                           Bind Timestamp                     
+---------------------------------------- ------------------------------------------------- -----------------------------------
+192.168.1.12                             uid=serviceaccount,ou=people,dc=example,dc=com    2025-06-10T21:18:12.100000+00:00
 
-### Persisting the Data Model
-
-For very large log files, parsing can be time-consuming. To speed up subsequent analyses, you can save the parsed data model to a file and load it directly in the future.
-
-#### Saving the Data Model (Pickle Format)
-
-Use the `--save-pickle` or `-p` argument to save the parsed data model to a file using Python's pickle format. This is the fastest method for saving and loading.
-
-**Usage:**
-```bash
-389ds-log-analyser <command> -f <log_file> -p <datamodel.pkl>
-```
-
-#### Saving the Data Model (JSON Format)
-
-Use the `--save-json` or `-j` argument to save the data model in a human-readable JSON format. This is useful for inspecting the data model or for use with other tools.
-
-**Usage:**
-```bash
-389ds-log-analyser <command> -f <log_file> -j <datamodel.json>
-```
-
-**JSON Data Model Structure**
-
-The saved JSON file will contain an object where each key is a connection number. The structure is as follows:
-
-```json
-{
-  "123": {
-    "connection_num": 123,
-    "source_ip": "192.168.1.50",
-    "source_hostname": "client-a.example.com",
-    "destination_ip": "10.0.0.1",
-    "bind_dn": "cn=Directory Manager",
-    "bind_timestamp": "2025-06-10T12:00:00+02:00",
-    "unbind_timestamp": "2025-06-10T12:01:00+02:00",
-    "operations": [
-      {
-        "op_num": 0,
-        "type": "BIND",
-        "timestamp": "2025-06-10T12:00:00+02:00",
-        "data": {
-          "dn": "cn=Directory Manager",
-          "method": 128,
-          "version": 3
-        },
-        "result": {
-          "err": 0,
-          "tag": 97,
-          "nentries": 0
-        }
-      }
-    ]
-  }
-}
-```
-
-#### Loading the Data Model
-
-Use the `--load-datamodel` or `-l` argument to load a previously saved data model. The tool will automatically detect the file format (pickle or JSON) based on the file's content and extension. This option is mutually exclusive with the `-f` or `--file` argument.
-
-**Usage:**
-```bash
-# Load from a pickle file
-389ds-log-analyser <command> -l <datamodel.pkl>
-
-# Load from a JSON file
-389ds-log-analyser <command> -l <datamodel.json>
-```
-
-### 🛠️ Commands
-
-
-#### Show Completed Connections (`src-ip-table`)
-
-This query displays a table of all connections that have a successful `BIND` and have been closed. The table includes the source IP, bind timestamp, and unbind timestamp.
-
-**Usage:**
-```bash
-389ds-log-analyser src-ip-table -f <path_to_log_file>
-```
-
-**Example Output:**
-```
-Source IP            Bind Timestamp                      Unbind Timestamp
--------------------- ----------------------------------- -----------------------------------
-192.168.1.10         2025-06-10T21:18:06.100000+00:00    2025-06-10T21:18:07.200000+00:00
-... 
-```
-
-#### Show Open Connections (`open-connections`)
-
-This query displays a table of all connections that have a successful `BIND` but have not yet been closed. This is useful for monitoring currently active sessions.
-
-**Usage:**
-```bash
-389ds-log-analyser open-connections -f <path_to_log_file>
-```
-
-**Example Output:**
-```
-Source IP            Bind DN                                     Bind Timestamp
--------------------- -------------------------------------------------- -----------------------------------
-192.168.1.12         uid=another,ou=people,dc=example,dc=com     2025-06-10T21:18:12.100000+00:00
-... 
-```
-
-##### Filtering by Bind DN
-
-The `open-connections` command also supports filtering by one or more Bind DNs using the `--filter-bind-dn` argument. This is useful for focusing on connections from specific users or applications.
-
-**Usage:**
-```bash
-# Filter for a single Bind DN
-389ds-log-analyser open-connections -f <log_file> --filter-bind-dn "uid=test,ou=people,dc=example,dc=com"
-
-# Filter for multiple Bind DNs
-389ds-log-analyser open-connections -f <log_file> --filter-bind-dn "uid=test,ou=people,dc=example,dc=com" "cn=Directory Manager"
-```
-
-When no filter is applied, the command also provides a summary of open connections grouped by Bind DN:
-
-**Example Summary Output:**
-```
 Summary of Open Connections by Bind DN:
 Bind DN                                                                Count
 ---------------------------------------------------------------------- -----
-uid=activeuser,ou=people,dc=example,dc=com                             1
-uid=another,ou=people,dc=example,dc=com                                1
+uid=serviceaccount,ou=people,dc=example,dc=com                         1
+cn=Directory Manager                                                    2
 ```
 
-#### Show Unique Client IPs (`unique-clients`)
+### `unique-clients` - Client Inventory
 
-This query scans all connections and prints a unique, sorted list of all source IP addresses that have connected to the server.
+Lists all unique client IP addresses that have connected.
 
-**Usage:**
 ```bash
-389ds-log-analyser unique-clients -f <path_to_log_file>
+389ds-log-analyser unique-clients -f access.log --resolve-hostnames
 ```
 
-**Example Output:**
+**Output:**
 ```
-Unique Client IPs
------------------
-192.168.1.10
-192.168.1.11
-192.168.1.12
-192.168.1.13
+Unique Client Hostnames
+-----------------------
+app-server-01.example.com
+app-server-02.example.com
+monitoring.example.com
 local
+
+Total unique clients: 4
 ```
 
-#### Show Unindexed Searches (`unindexed-searches`)
+### `unindexed-searches` - Performance Analysis
 
-This query is essential for performance tuning. It identifies and lists all search operations (`SRCH`) that resulted in a `Partially Unindexed Filter` note, which can indicate missing database indexes.
-
-**Usage:**
-```bash
-389ds-log-analyser unindexed-searches -f <path_to_log_file>
-```
-
-#### Show Connection Details (`connection-details`)
-
-This command provides a detailed, chronological view of all operations within one or more connections. It is highly useful for in-depth debugging and tracing the lifecycle of a client session.
-
-For each connection, it lists every operation (`BIND`, `SRCH`, `MOD`, `DEL`, etc.), including its timestamp and any associated data. For search operations, it explicitly shows the base, filter, and requested attributes.
-
-**Usage:**
+**Critical for performance tuning!** Identifies searches that may benefit from additional database indexes.
 
 ```bash
-# Show details for all connections
-389ds-log-analyser connection-details -f <path_to_log_file>
-
-# Show details for a specific connection ID
-389ds-log-analyser connection-details -f <path_to_log_file> --conn-id 123
+389ds-log-analyser unindexed-searches -f access.log
 ```
 
-**Example Output:**
-
-```
---- Connection: 123 | Source: client-a.example.com | Bind DN: cn=Directory Manager ---
-  Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00
-    - Result: {'err': 0, 'tag': 97, 'nentries': 0}
-  Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01
-    - Base: ou=people,dc=example,dc=com
-    - Filter: (uid=testuser)
-    - Attrs: cn uid mail
-    - Result: {'err': 0, 'tag': 101, 'nentries': 1}
-...
-```
-
-**Example Output:**
+**Output:**
 ```
 Timestamp                           Conn       Op         Base                           Filter
 ----------------------------------- ---------- ---------- ------------------------------ ----------------------------------------
 2025-06-10T11:06:44.711859+02:00    105        1          dc=example,dc=com              (&(objectClass=ipHost)(ipHostNumber=10.31.50.48))
+2025-06-10T11:07:15.234567+02:00    106        3          ou=people,dc=example,dc=com    (&(department=Engineering)(status=active))
 ```
+
+### `connection-details` - Detailed Operation Trace
+
+Provides comprehensive debugging information for connection troubleshooting.
+
+```bash
+# All connections
+389ds-log-analyser connection-details -f access.log
+
+# Specific connection
+389ds-log-analyser connection-details -f access.log --conn-id 12345
+```
+
+**Output:**
+```
+--- Connection: 12345 | Source: app-server-01.example.com | Bind DN: uid=appuser,ou=people,dc=example,dc=com ---
+  Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00
+  Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
+  Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
+```
+
+## 🔧 Advanced Features
+
+### Data Model Persistence
+
+For large log files, save parsed data for faster subsequent analysis:
+
+```bash
+# Save as pickle (fastest)
+389ds-log-analyser src-ip-table -f large-access.log -p datamodel.pkl
+
+# Save as JSON (human-readable)
+389ds-log-analyser src-ip-table -f large-access.log -j datamodel.json
+
+# Load saved data model
+389ds-log-analyser open-connections -l datamodel.pkl
+```
+
+### Hostname Resolution with Caching
+
+```bash
+# Resolve hostnames (slower initial run, but results are cached)
+389ds-log-analyser src-ip-table -f access.log --resolve-hostnames -p cached-model.pkl
+
+# Subsequent runs using cached model are fast
+389ds-log-analyser open-connections -l cached-model.pkl
+```
+
+### Advanced Filtering
+
+```bash
+# Filter by single IP
+389ds-log-analyser src-ip-table -f access.log --filter-client-ip 192.168.1.10
+
+# Filter by multiple IPs
+389ds-log-analyser src-ip-table -f access.log --filter-client-ip 192.168.1.10 192.168.1.11
+
+# Filter open connections by bind DN
+389ds-log-analyser open-connections -f access.log --filter-bind-dn "cn=Directory Manager"
+```
+
+## 📚 Examples
+
+### Daily Performance Report
+
+```bash
+#!/bin/bash
+LOG_FILE="/var/log/dirsrv/slapd-instance/access"
+REPORT_DATE=$(date +%Y-%m-%d)
+
+echo "=== 389ds Performance Report - $REPORT_DATE ===" > report.txt
+echo "" >> report.txt
+
+echo "Unindexed Searches:" >> report.txt
+389ds-log-analyser unindexed-searches -f "$LOG_FILE" >> report.txt
+echo "" >> report.txt
+
+echo "Currently Open Connections:" >> report.txt
+389ds-log-analyser open-connections -f "$LOG_FILE" --resolve-hostnames >> report.txt
+echo "" >> report.txt
+
+echo "Unique Clients Today:" >> report.txt
+389ds-log-analyser unique-clients -f "$LOG_FILE" --resolve-hostnames >> report.txt
+```
+
+### Investigating Connection Issues
+
+```bash
+# 1. Find problematic client
+389ds-log-analyser unique-clients -f access.log
+
+# 2. Filter connections from specific client
+389ds-log-analyser src-ip-table -f access.log --filter-client-ip 192.168.1.100
+
+# 3. Get detailed trace for debugging
+389ds-log-analyser connection-details -f access.log --filter-client-ip 192.168.1.100
+```
+
+### Performance Optimization Workflow
+
+```bash
+# 1. Identify unindexed searches
+389ds-log-analyser unindexed-searches -f access.log > unindexed.txt
+
+# 2. Analyze patterns in the filters
+cat unindexed.txt | awk '{print $NF}' | sort | uniq -c | sort -nr
+
+# 3. Create appropriate indexes based on common filter patterns
+# 4. Re-run analysis after index creation to verify improvement
+```
+
+## 📖 API Documentation
+
+### Data Model Classes
+
+The tool provides a programmatic API for custom analysis:
+
+```python
+from data_model import LogDataModel, build_data_model
+
+# Parse log file
+data_model = build_data_model("/path/to/access.log", debug=True)
+
+# Access connections
+for conn_id, connection in data_model.connections.items():
+    print(f"Connection {conn_id}: {connection.source_ip} -> {connection.bind_dn}")
+    
+    # Access operations
+    for op_id, operation in connection.operations.items():
+        print(f"  Operation {op_id}: {operation.op_type} at {operation.timestamp}")
+
+# Save/load data models
+data_model.save("model.pkl")
+data_model.save_json("model.json")
+loaded_model = LogDataModel.load("model.pkl")
+```
+
+### Log Parser Functions
+
+```python
+from log_parser import parse_log_line, parse_timestamp
+
+# Parse individual log lines
+line = '[10/Jun/2025:21:18:06.100000Z] conn=100 op=0 BIND dn="uid=test,ou=people,dc=example,dc=com"'
+parsed = parse_log_line(line)
+print(parsed)  # {'type': 'BIND', 'conn': 100, 'op': 0, 'dn': 'uid=test,ou=people,dc=example,dc=com', ...}
+
+# Parse timestamps
+timestamp = parse_timestamp("10/Jun/2025:21:18:06.100000Z")
+print(timestamp)  # datetime object with timezone
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Problem: No output from commands**
+```bash
+# Check if log file exists and is readable
+ls -la /path/to/access.log
+
+# Enable debug mode to see parsing errors
+389ds-log-analyser src-ip-table -f access.log --debug
+```
+
+**Problem: "Command not found" after installation**
+```bash
+# Check if installation location is in PATH
+pip show 389ds-log-analyser
+
+# Try running with python -m
+python -m cli src-ip-table -f access.log
+```
+
+**Problem: Slow performance with large files**
+```bash
+# Use data model persistence for large files
+389ds-log-analyser src-ip-table -f large.log -p model.pkl
+# Subsequent runs:
+389ds-log-analyser open-connections -l model.pkl
+```
+
+**Problem: Memory issues with very large logs**
+```bash
+# Process log files in chunks or use log rotation
+# Consider using grep to pre-filter relevant time ranges:
+grep "2025-06-10" access.log > filtered.log
+389ds-log-analyser src-ip-table -f filtered.log
+```
+
+### Debug Mode
+
+Enable debug mode to see detailed parsing information:
+
+```bash
+389ds-log-analyser src-ip-table -f access.log --debug
+```
+
+This will show:
+- Lines that failed to parse
+- Parsing errors and exceptions
+- Statistics about processed vs. skipped lines
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+git clone https://github.com/theoweiss/389ds-log-analyser.git
+cd 389ds-log-analyser
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install in development mode with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+python -m pytest tests/ -v
+
+# Run type checking (optional)
+mypy src/
+```
+
+### Code Quality
+
+This project maintains high code quality standards:
+- **Type Hints**: All code is fully type-annotated
+- **Testing**: Comprehensive test suite with 24+ tests
+- **Documentation**: Extensive documentation and examples
+- **Code Style**: Consistent formatting and clear naming
+
+## 📄 License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+### License Summary
+
+- ✅ Commercial use allowed
+- ✅ Modification allowed
+- ✅ Distribution allowed
+- ✅ Patent use allowed
+- ❗ Must include license and copyright notice
+- ❗ Must disclose source code
+- ❗ Changes must be documented
+- ❗ Derivative works must use the same license
+
+## 🙏 Acknowledgments
+
+- Built for the 389 Directory Server community
+- Inspired by the need for better LDAP log analysis tools
+- Thanks to all contributors and users providing feedback
+
+---
+
+**Need help?** Open an issue on [GitHub](https://github.com/theoweiss/389ds-log-analyser/issues) or check our [documentation](https://github.com/theoweiss/389ds-log-analyser/wiki).
 
 
 
