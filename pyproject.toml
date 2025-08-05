@@ -29,7 +29,7 @@ dev = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-py-modules = ["cli", "data_model", "log_parser"]
+py-modules = ["cli", "data_model", "log_parser", "exceptions", "logging_config"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
