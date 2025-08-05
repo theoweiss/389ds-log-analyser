@@ -220,9 +220,9 @@ Provides comprehensive debugging information for connection troubleshooting.
 **Output:**
 ```
 --- Connection: 12345 | Source: app-server-01.example.com | Bind DN: uid=appuser,ou=people,dc=example,dc=com ---
-  Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00
-  Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
-  Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
+  Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00 | Result: err=0 nentries=0    
+Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Result: err=0 nentries=5     | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
+Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Result: err=0 nentries=3     | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
 ```
 
 ## 🔧 Advanced Features

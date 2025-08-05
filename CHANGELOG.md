@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.2] - 2025-01-18
+
+### Added
+- Result column in `connection-details` command output showing operation results (`err` and `nentries` values)
+- Enhanced operation tracking with RESULT information from 389DS access logs
+
+### Changed
+- Improved `connection-details` output format with 4th column displaying operation success/failure status and entry counts
+
 ## [1.6.1] - 2025-08-05
 
 ### Fixed

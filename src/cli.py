@@ -20,6 +20,7 @@ import socket
 import sys
 import os
 import logging
+from datetime import datetime
 from importlib.metadata import PackageNotFoundError, version
 from typing import Optional, Dict, Any, List, Union
 
@@ -288,6 +289,16 @@ def print_open_connections_table(connections: Dict[int, Any], resolve_hostnames:
             cause=e
         )
 
+def format_result_info(result: Optional[Any]) -> str:
+    """Formats result information showing err and nentries values."""
+    if result is None or not isinstance(result, dict):
+        return "N/A"
+    
+    err = result.get('err', 'N/A')
+    nentries = result.get('nentries', 'N/A')
+    
+    return f"err={err} nentries={nentries}"
+
 def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None) -> None:
     """Prints detailed operations for one or all connections."""
     try:
@@ -325,14 +336,17 @@ def print_connection_details(connections: Dict[int, Any], resolve_hostnames: boo
                     try:
                         # Format timestamp to be more readable
                         ts = op.timestamp.strftime('%Y-%m-%d %H:%M:%S') if op.timestamp else "N/A"
+                        
+                        # Format result information
+                        result_info = format_result_info(op.result)
 
                         if op.op_type == 'SRCH':
                             base = op.data.get('base', 'N/A')
                             sfilter = op.data.get('filter', 'N/A')
                             attrs = op.data.get('attrs', 'N/A')
-                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Base: {base} | Filter: {sfilter} | Attrs: {attrs}")
+                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20} | Base: {base} | Filter: {sfilter} | Attrs: {attrs}")
                         else:
-                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts}")
+                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20}")
                     except Exception as e:
                         logger.warning(f"Error displaying operation {op.op_num} for connection {conn.conn_num}: {e}")
                         continue
