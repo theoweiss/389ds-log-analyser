@@ -127,8 +127,9 @@ def test_connection_details_subcommand():
 
     # Test with an invalid connection ID
     command_invalid = [sys.executable, "-m", "cli", "connection-details", "-f", LOG_FILE, "--conn-id", "99999"]
-    result_invalid = run_command(command_invalid)
-    assert "Error: Connection ID 99999 not found." in result_invalid.stdout
+    result_invalid = run_command(command_invalid, check=False)
+    assert result_invalid.returncode == 1
+    assert "Validation Error: Connection ID 99999 not found" in result_invalid.stdout
 
 
 @pytest.mark.parametrize("script_name", [

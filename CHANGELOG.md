@@ -7,22 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2025-08-05
+
 ### Added
-- Comprehensive type annotations for all modules
-- Enhanced documentation with detailed examples and troubleshooting
-- Contributing guidelines and development setup instructions
-- API documentation for programmatic usage
-- Performance optimization examples and workflows
+- Custom exception hierarchy with detailed error messages and context (`exceptions.py`)
+- Centralized logging configuration with colored console output (`logging_config.py`)
+- Enhanced error handling with structured exception classes
+- Improved user feedback with detailed error descriptions and suggestions
+- Performance logging capabilities for operation timing
+- Rotating log file support with automatic cleanup
 
 ### Changed
-- License changed from MIT to GNU General Public License v3.0
-- Updated README with comprehensive feature overview and usage examples
-- Improved error handling and debug output
-- Enhanced CLI help text and command descriptions
+- Improved CLI error handling with proper exit codes and validation messages
+- Enhanced error message consistency across all commands
+- Better structured logging output with color-coded levels
+- Refined validation error messages for better user experience
 
 ### Fixed
-- Missing `if __name__ == '__main__':` block in cli.py that prevented module execution
-- Type safety improvements throughout codebase
+- Test validation for CLI error scenarios and edge cases
+- Proper error code handling in connection-details command validation
+- Improved exception handling throughout the codebase
 
 ## [1.5.0] - 2024-12-XX
 
