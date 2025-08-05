@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2025-08-05
+
+### Fixed
+- Missing modules in package configuration (exceptions, logging_config)
+- ModuleNotFoundError in CI installation tests for Python 3.9/3.10
+- Package installation compatibility across different Python versions
+- Import resolution issues in installed package context
+
 ## [1.6.0] - 2025-08-05
 
 ### Added
