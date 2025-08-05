@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Proper error code handling in connection-details command validation
 - Improved exception handling throughout the codebase
 
-## [1.5.0] - 2024-12-XX
+## [1.5.0] - 2025-07-01
 
 ### Added
 - Full type annotation support for Python 3.8+
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added GPL v3 license headers to all source files
 - Enhanced copyright and license information
 
-## [1.4.0] - 2024-XX-XX
+## [1.4.0] - 2025-06-30
 
 ### Added
 - Data model persistence in JSON and pickle formats
@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Parsing issues with various timestamp formats
 - Memory usage optimization for large datasets
 
-## [1.3.0] - 2024-XX-XX
+## [1.3.0] - 2025-06-30
 
 ### Added
 - `connection-details` command for detailed operation tracing
@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issues with parsing certain LDAP operation types
 - Timezone handling in timestamp parsing
 
-## [1.2.0] - 2024-XX-XX
+## [1.2.0] - 2025-06-30
 
 ### Added
 - `unindexed-searches` command for performance analysis
@@ -97,7 +97,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Parsing edge cases with quoted values in log entries
 - Handling of incomplete or truncated log lines
 
-## [1.1.0] - 2024-XX-XX
+## [1.1.1] - 2025-06-13
+
+### Fixed
+- Correct packaging configuration and dependencies
+- Added installation validation test
+
+## [1.1.0] - 2025-06-13
 
 ### Added
 - `open-connections` command to monitor active sessions
@@ -114,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issues with connection state tracking
 - Timestamp parsing for different locale settings
 
-## [1.0.0] - 2024-XX-XX
+## [1.0.0] - 2025-06-11
 
 ### Added
 - Initial release of 389ds-log-analyser
