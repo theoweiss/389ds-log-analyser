@@ -22,14 +22,24 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List, Type, ClassVar
 
 # Import custom exceptions
-from exceptions import (
-    LogAnalyserError, FileOperationError, LogFileNotFoundError, 
-    LogFilePermissionError, DataModelFileError, LogParsingError,
-    DataModelError, EmptyLogFileError, CorruptedDataModelError
-)
+try:
+    from .exceptions import (
+        LogAnalyserError, FileOperationError, LogFileNotFoundError, 
+        LogFilePermissionError, DataModelFileError, LogParsingError,
+        DataModelError, EmptyLogFileError, CorruptedDataModelError
+    )
+except ImportError:
+    from exceptions import (
+        LogAnalyserError, FileOperationError, LogFileNotFoundError, 
+        LogFilePermissionError, DataModelFileError, LogParsingError,
+        DataModelError, EmptyLogFileError, CorruptedDataModelError
+    )
 
 # Assuming log_parser.py is in the same directory or accessible
-from log_parser import parse_log_line, LogParsingError as ParserError
+try:
+    from .log_parser import parse_log_line, LogParsingError as ParserError
+except ImportError:
+    from log_parser import parse_log_line, LogParsingError as ParserError
 
 # Set up logging
 logger = logging.getLogger(__name__)

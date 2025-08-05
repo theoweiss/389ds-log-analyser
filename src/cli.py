@@ -24,14 +24,27 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import Optional, Dict, Any, List, Union
 
 # Import custom exceptions
-from exceptions import (
-    LogAnalyserError, FileOperationError, LogFileNotFoundError,
-    LogFilePermissionError, DataModelFileError, ValidationError,
-    InvalidArgumentError, ConnectionNotFoundError, NetworkOperationError,
-    HostnameResolutionError, DataModelError, EmptyLogFileError
-)
+try:
+    # Try relative import first (when installed as package)
+    from .exceptions import (
+        LogAnalyserError, FileOperationError, LogFileNotFoundError,
+        LogFilePermissionError, DataModelFileError, ValidationError,
+        InvalidArgumentError, ConnectionNotFoundError, NetworkOperationError,
+        HostnameResolutionError, DataModelError, EmptyLogFileError
+    )
+except ImportError:
+    # Fall back to absolute import (development/testing)
+    from exceptions import (
+        LogAnalyserError, FileOperationError, LogFileNotFoundError,
+        LogFilePermissionError, DataModelFileError, ValidationError,
+        InvalidArgumentError, ConnectionNotFoundError, NetworkOperationError,
+        HostnameResolutionError, DataModelError, EmptyLogFileError
+    )
 
-from data_model import LogDataModel, build_data_model
+try:
+    from .data_model import LogDataModel, build_data_model
+except ImportError:
+    from data_model import LogDataModel, build_data_model
 
 # Set up logging
 logger = logging.getLogger(__name__)

@@ -22,10 +22,16 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
 # Import custom exceptions
-from exceptions import (
-    LogParsingError, TimestampParsingError, InvalidLogFormatError,
-    LogFileNotFoundError, LogFilePermissionError, FileOperationError
-)
+try:
+    from .exceptions import (
+        LogParsingError, TimestampParsingError, InvalidLogFormatError,
+        LogFileNotFoundError, LogFilePermissionError, FileOperationError
+    )
+except ImportError:
+    from exceptions import (
+        LogParsingError, TimestampParsingError, InvalidLogFormatError,
+        LogFileNotFoundError, LogFilePermissionError, FileOperationError
+    )
 
 # Set up logging
 logger = logging.getLogger(__name__)
