@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "389ds-log-analyser"
-version = "1.7.0"
+version = "1.8.0"
 authors = [
   { name="Thomas Weiss", email="weiss@puzzle-itc.de" },
 ]

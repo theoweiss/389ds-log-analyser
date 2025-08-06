@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2025-01-19
+
+### Added
+- `--long` option for `connection-details` command providing grep-friendly output format
+- Enhanced output formatting with single-line connection data for easier text processing
+
+### Enhanced
+- Improved `connection-details` command flexibility with multiple output format options
+
 ## [1.7.0] - 2025-01-19
 
 ### Added
