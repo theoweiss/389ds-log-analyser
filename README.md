@@ -9,7 +9,7 @@ A powerful command-line tool for parsing and analyzing 389 Directory Server (for
 
 ## 🚀 Features
 
-- **Multiple Analysis Commands**: Analyze completed connections, open connections, unique clients, unindexed searches, and detailed operation traces
+- **Multiple Analysis Commands**: Analyze completed connections, open connections, unique clients, unindexed searches, and detailed operation traces with optional long listing format
 - **Performance Optimization**: Identify unindexed searches that may impact server performance
 - **Flexible Output**: Support for both human-readable tables and JSON export
 - **Data Persistence**: Save parsed data models for faster subsequent analysis of large log files
@@ -215,14 +215,38 @@ Provides comprehensive debugging information for connection troubleshooting.
 
 # Specific connection
 389ds-log-analyser connection-details -f access.log --conn-id 12345
+
+# Long listing format with source information in first column (grep-friendly)
+389ds-log-analyser connection-details -f access.log --long
 ```
 
-**Output:**
+**Standard Output:**
 ```
 --- Connection: 12345 | Source: app-server-01.example.com | Bind DN: uid=appuser,ou=people,dc=example,dc=com ---
   Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00 | Result: err=0 nentries=0    
-Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Result: err=0 nentries=5     | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
-Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Result: err=0 nentries=3     | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
+  Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Result: err=0 nentries=5     | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
+  Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Result: err=0 nentries=3     | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
+```
+
+**Long Listing Format (`--long`) - Source IP/hostname as first column:**
+```
+--- Connection: 12345 | Source: app-server-01.example.com | Bind DN: uid=appuser,ou=people,dc=example,dc=com ---
+  192.168.1.100        | Op: 0     | Type: BIND     | Timestamp: 2025-06-10 12:00:00 | Result: err=0 nentries=0    
+  192.168.1.100        | Op: 1     | Type: SRCH     | Timestamp: 2025-06-10 12:00:01 | Result: err=0 nentries=5     | Base: ou=people,dc=example,dc=com | Filter: (uid=testuser) | Attrs: cn uid mail
+  192.168.1.100        | Op: 2     | Type: SRCH     | Timestamp: 2025-06-10 12:00:02 | Result: err=0 nentries=3     | Base: ou=groups,dc=example,dc=com | Filter: (member=uid=testuser,ou=people,dc=example,dc=com) | Attrs: cn
+```
+
+The long format adds the source IP or hostname as the first column, making it easy to identify the source of operations when piping to `grep` for content analysis:
+
+```bash
+# Find operations searching for specific object classes
+389ds-log-analyser connection-details -f access.log --long | grep "objectClass=posixAccount"
+
+# Search for specific attributes in LDAP filters
+389ds-log-analyser connection-details -f access.log --long | grep "uid=testuser"
+
+# Find operations with specific base DNs
+389ds-log-analyser connection-details -f access.log --long | grep "Base: ou=people"
 ```
 
 ## 🔧 Advanced Features

@@ -404,7 +404,7 @@ def operation_matches_filters(operation: Any, filter_err: Optional[int] = None, 
     
     return True
 
-def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None, filter_err: Optional[int] = None, filter_nentries: Optional[int] = None, filter_op_include: Optional[List[str]] = None, filter_op_exclude: Optional[List[str]] = None) -> None:
+def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None, filter_err: Optional[int] = None, filter_nentries: Optional[int] = None, filter_op_include: Optional[List[str]] = None, filter_op_exclude: Optional[List[str]] = None, long_format: bool = False) -> None:
     """Prints detailed operations for one or all connections.
     
     Args:
@@ -415,6 +415,7 @@ def print_connection_details(connections: Dict[int, Any], resolve_hostnames: boo
         filter_nentries: Optional number of entries filter (e.g., 0 for no results, >0 for successful searches)
         filter_op_include: Optional list of operation types to include
         filter_op_exclude: Optional list of operation types to exclude
+        long_format: Whether to display detailed source information for each connection
     """
     try:
         # If a specific connection ID is provided, filter for it
@@ -458,6 +459,22 @@ def print_connection_details(connections: Dict[int, Any], resolve_hostnames: boo
                 # Only print connection header if we have operations to show
                 display_name = get_display_ip(conn, resolve_hostnames)
                 print(f"\n--- Connection: {conn.conn_num} | Source: {display_name} | Bind DN: {conn.bind_dn or 'N/A'} ---")
+                
+                # Prepare source information for long format
+                source_column = ""
+                if long_format:
+                    # Determine the source to display (prefer hostname over IP)
+                    source_info = conn.source_ip or 'N/A'
+                    if conn.source_hostname:
+                        source_info = conn.source_hostname
+                    elif conn.source_ip and resolve_hostnames:
+                        try:
+                            source_info = resolve_hostname(conn.source_ip)
+                        except HostnameResolutionError:
+                            source_info = conn.source_ip or 'N/A'
+                    
+                    # Format source column with fixed width for consistent alignment
+                    source_column = f"{source_info:<20} | "
 
                 for op in filtered_ops:
                     try:
@@ -471,9 +488,9 @@ def print_connection_details(connections: Dict[int, Any], resolve_hostnames: boo
                             base = op.data.get('base', 'N/A')
                             sfilter = op.data.get('filter', 'N/A')
                             attrs = op.data.get('attrs', 'N/A')
-                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20} | Base: {base} | Filter: {sfilter} | Attrs: {attrs}")
+                            print(f"  {source_column}Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20} | Base: {base} | Filter: {sfilter} | Attrs: {attrs}")
                         else:
-                            print(f"  Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20}")
+                            print(f"  {source_column}Op: {op.op_num if op.op_num is not None else '-':<5} | Type: {op.op_type:<8} | Timestamp: {ts} | Result: {result_info:<20}")
                     except Exception as e:
                         logger.warning(f"Error displaying operation {op.op_num} for connection {conn.conn_num}: {e}")
                         continue
@@ -769,6 +786,11 @@ def main() -> None:
         metavar='OP_TYPE',
         help='Filter operations by type. Supports comma-separated values (ADD,SRCH,MOD) and negation with ! prefix (!BIND). Valid types: BIND, SRCH, ADD, MOD, DEL, MODRDN, CMP, EXT, UNBIND, Disconnect.'
     )
+    parser_details.add_argument(
+        '--long',
+        action='store_true',
+        help='Long listing format: display detailed source information for each connection.'
+    )
     parser_details.set_defaults(func=print_connection_details)
 
     argcomplete.autocomplete(parser)
@@ -827,7 +849,8 @@ def main() -> None:
                 filter_err=getattr(args, 'filter_err', None),
                 filter_nentries=getattr(args, 'filter_nentries', None),
                 filter_op_include=filter_op_include,
-                filter_op_exclude=filter_op_exclude
+                filter_op_exclude=filter_op_exclude,
+                long_format=getattr(args, 'long', False)
             )
         
     except (LogFileNotFoundError, LogFilePermissionError) as e:
