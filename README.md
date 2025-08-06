@@ -14,7 +14,7 @@ A powerful command-line tool for parsing and analyzing 389 Directory Server (for
 - **Flexible Output**: Support for both human-readable tables and JSON export
 - **Data Persistence**: Save parsed data models for faster subsequent analysis of large log files
 - **Hostname Resolution**: Resolve IP addresses to hostnames with caching for better readability
-- **Advanced Filtering**: Filter results by client IP addresses or bind DNs
+- **Advanced Filtering**: Filter results by client IP addresses, bind DNs, operation types, error codes, and result counts
 - **Comprehensive CLI**: Tab completion support and multiple entry points for convenience
 - **Type Safety**: Fully type-annotated codebase for better development experience
 
@@ -263,6 +263,19 @@ For large log files, save parsed data for faster subsequent analysis:
 
 # Filter open connections by bind DN
 389ds-log-analyser open-connections -f access.log --filter-bind-dn "cn=Directory Manager"
+
+# Filter operations by type (connection-details command)
+389ds-log-analyser connection-details -f access.log --filter-op-type BIND
+389ds-log-analyser connection-details -f access.log --filter-op-type ADD,SRCH,MOD
+389ds-log-analyser connection-details -f access.log --filter-op-type '!BIND'
+
+# Filter by error codes and result counts
+389ds-log-analyser connection-details -f access.log --filter-err 0        # Only successful operations
+389ds-log-analyser connection-details -f access.log --filter-err 49       # Only access denied errors
+389ds-log-analyser connection-details -f access.log --filter-nentries 0   # Operations returning no entries
+
+# Combine multiple filters
+389ds-log-analyser connection-details -f access.log --filter-op-type SRCH --filter-err 0 --filter-nentries 0
 ```
 
 ## 📚 Examples
@@ -300,6 +313,22 @@ echo "Unique Clients Today:" >> report.txt
 
 # 3. Get detailed trace for debugging
 389ds-log-analyser connection-details -f access.log --filter-client-ip 192.168.1.100
+```
+
+### Operation Type Analysis
+
+```bash
+# Analyze authentication patterns
+389ds-log-analyser connection-details -f access.log --filter-op-type BIND
+
+# Monitor write operations only
+389ds-log-analyser connection-details -f access.log --filter-op-type ADD,MOD,DEL
+
+# Focus on search operations with no results (potential issues)
+389ds-log-analyser connection-details -f access.log --filter-op-type SRCH --filter-nentries 0
+
+# Exclude routine bind operations to focus on data operations
+389ds-log-analyser connection-details -f access.log --filter-op-type '!BIND,!UNBIND'
 ```
 
 ### Performance Optimization Workflow

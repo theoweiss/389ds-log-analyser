@@ -22,11 +22,11 @@ import os
 import logging
 from datetime import datetime
 from importlib.metadata import PackageNotFoundError, version
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 
 # Import custom exceptions
 from exceptions import (
-    LogAnalyserError, FileOperationError, LogFileNotFoundError,
+    LogAnalyserError, LogFileNotFoundError,
     LogFilePermissionError, DataModelFileError, ValidationError,
     InvalidArgumentError, ConnectionNotFoundError, NetworkOperationError,
     HostnameResolutionError, DataModelError, EmptyLogFileError
@@ -143,6 +143,75 @@ def validate_ip_addresses(ip_addresses: List[str]) -> List[str]:
                 )
     
     return validated_ips
+
+def validate_operation_types(op_type_filter: str) -> tuple[List[str], List[str]]:
+    """
+    Validate operation type filter argument.
+    
+    Args:
+        op_type_filter: Operation type filter string (e.g., "ADD,SRCH" or "!BIND")
+        
+    Returns:
+        Tuple of (include_types, exclude_types) lists
+        
+    Raises:
+        InvalidArgumentError: If any operation type is invalid
+    """
+    # Valid operation types based on log_parser.py
+    valid_op_types = {"BIND", "RESULT", "SRCH", "UNBIND", "EXT", "Disconnect", "ADD", "DEL", "MOD", "MODRDN", "CMP"}
+    
+    include_types = []
+    exclude_types = []
+    
+    # Split by comma and process each type
+    for op_type in op_type_filter.split(','):
+        op_type = op_type.strip()
+        
+        if not op_type:
+            continue
+            
+        # Check for negation
+        if op_type.startswith('!'):
+            op_type_clean = op_type[1:].strip()
+            if not op_type_clean:
+                raise InvalidArgumentError(
+                    "filter-op-type",
+                    op_type,
+                    "Empty operation type after negation",
+                    suggestion="Provide a valid operation type after '!', e.g., '!BIND'"
+                )
+            
+            if op_type_clean not in valid_op_types:
+                raise InvalidArgumentError(
+                    "filter-op-type",
+                    op_type_clean,
+                    "Invalid operation type",
+                    suggestion=f"Valid types: {', '.join(sorted(valid_op_types))}"
+                )
+            
+            exclude_types.append(op_type_clean)
+        else:
+            if op_type not in valid_op_types:
+                raise InvalidArgumentError(
+                    "filter-op-type",
+                    op_type,
+                    "Invalid operation type",
+                    suggestion=f"Valid types: {', '.join(sorted(valid_op_types))}"
+                )
+            
+            include_types.append(op_type)
+    
+    # Validate that we don't have conflicting include/exclude for the same type
+    conflicting = set(include_types) & set(exclude_types)
+    if conflicting:
+        raise InvalidArgumentError(
+            "filter-op-type",
+            op_type_filter,
+            f"Conflicting include/exclude for operation types: {', '.join(conflicting)}",
+            suggestion="Either include or exclude a type, but not both"
+        )
+    
+    return include_types, exclude_types
 
 def get_display_ip(conn: Any, resolve_hostnames: bool = False) -> str:
     """Gets the display string for a connection's source IP, using hostname if available/requested."""
@@ -299,8 +368,54 @@ def format_result_info(result: Optional[Any]) -> str:
     
     return f"err={err} nentries={nentries}"
 
-def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None) -> None:
-    """Prints detailed operations for one or all connections."""
+def operation_matches_filters(operation: Any, filter_err: Optional[int] = None, filter_nentries: Optional[int] = None, filter_op_include: Optional[List[str]] = None, filter_op_exclude: Optional[List[str]] = None) -> bool:
+    """Check if an operation matches the specified filter criteria."""
+    if filter_err is None and filter_nentries is None and filter_op_include is None and filter_op_exclude is None:
+        return True
+    
+    # Check operation type filters first (no need for result data)
+    if filter_op_include is not None or filter_op_exclude is not None:
+        op_type = getattr(operation, 'op_type', None)
+        
+        # If include filter is specified, operation type must be in the list
+        if filter_op_include and op_type not in filter_op_include:
+            return False
+            
+        # If exclude filter is specified, operation type must not be in the list
+        if filter_op_exclude and op_type in filter_op_exclude:
+            return False
+    
+    # Skip operations without result data if err/nentries filters are specified
+    if (filter_err is not None or filter_nentries is not None):
+        if not operation.result or not isinstance(operation.result, dict):
+            return False
+    
+    # Check err filter
+    if filter_err is not None:
+        op_err = operation.result.get('err')
+        if op_err != filter_err:
+            return False
+    
+    # Check nentries filter
+    if filter_nentries is not None:
+        op_nentries = operation.result.get('nentries')
+        if op_nentries != filter_nentries:
+            return False
+    
+    return True
+
+def print_connection_details(connections: Dict[int, Any], resolve_hostnames: bool = False, conn_id: Optional[int] = None, filter_err: Optional[int] = None, filter_nentries: Optional[int] = None, filter_op_include: Optional[List[str]] = None, filter_op_exclude: Optional[List[str]] = None) -> None:
+    """Prints detailed operations for one or all connections.
+    
+    Args:
+        connections: Dictionary of connection objects
+        resolve_hostnames: Whether to resolve IP addresses to hostnames
+        conn_id: Optional specific connection ID to display
+        filter_err: Optional error code filter (e.g., 0 for success, 49 for access denied)
+        filter_nentries: Optional number of entries filter (e.g., 0 for no results, >0 for successful searches)
+        filter_op_include: Optional list of operation types to include
+        filter_op_exclude: Optional list of operation types to exclude
+    """
     try:
         # If a specific connection ID is provided, filter for it
         if conn_id is not None:
@@ -319,20 +434,32 @@ def print_connection_details(connections: Dict[int, Any], resolve_hostnames: boo
         for key in sorted_conn_keys:
             conn = connections_to_print[key]
             try:
-                display_name = get_display_ip(conn, resolve_hostnames)
-                print(f"\n--- Connection: {conn.conn_num} | Source: {display_name} | Bind DN: {conn.bind_dn or 'N/A'} ---")
-
                 # Sort operations by timestamp or operation number as a fallback
                 sorted_ops = sorted(
                     conn.operations.values(), 
                     key=lambda op: (op.timestamp, op.op_num) if op.timestamp else (None, op.op_num)
                 )
 
-                if not sorted_ops:
-                    print("  No operations found for this connection.")
+                # Apply filters if specified
+                if filter_err is not None or filter_nentries is not None or filter_op_include is not None or filter_op_exclude is not None:
+                    filtered_ops = [op for op in sorted_ops if operation_matches_filters(op, filter_err, filter_nentries, filter_op_include, filter_op_exclude)]
+                else:
+                    filtered_ops = sorted_ops
+
+                # Skip connections with no matching operations when filtering
+                if not filtered_ops:
+                    if filter_err is None and filter_nentries is None and filter_op_include is None and filter_op_exclude is None:
+                        # Only show "no operations" message when not filtering
+                        display_name = get_display_ip(conn, resolve_hostnames)
+                        print(f"\n--- Connection: {conn.conn_num} | Source: {display_name} | Bind DN: {conn.bind_dn or 'N/A'} ---")
+                        print("  No operations found for this connection.")
                     continue
 
-                for op in sorted_ops:
+                # Only print connection header if we have operations to show
+                display_name = get_display_ip(conn, resolve_hostnames)
+                print(f"\n--- Connection: {conn.conn_num} | Source: {display_name} | Bind DN: {conn.bind_dn or 'N/A'} ---")
+
+                for op in filtered_ops:
                     try:
                         # Format timestamp to be more readable
                         ts = op.timestamp.strftime('%Y-%m-%d %H:%M:%S') if op.timestamp else "N/A"
@@ -627,6 +754,21 @@ def main() -> None:
         type=int,
         help='Display details for a specific connection ID.'
     )
+    parser_details.add_argument(
+        '--filter-err',
+        type=int,
+        help='Filter operations by error code (e.g., 0 for success, 49 for access denied).'
+    )
+    parser_details.add_argument(
+        '--filter-nentries',
+        type=int,
+        help='Filter operations by number of entries returned (e.g., 0 for no results, >0 for successful searches).'
+    )
+    parser_details.add_argument(
+        '--filter-op-type',
+        metavar='OP_TYPE',
+        help='Filter operations by type. Supports comma-separated values (ADD,SRCH,MOD) and negation with ! prefix (!BIND). Valid types: BIND, SRCH, ADD, MOD, DEL, MODRDN, CMP, EXT, UNBIND, Disconnect.'
+    )
     parser_details.set_defaults(func=print_connection_details)
 
     argcomplete.autocomplete(parser)
@@ -640,6 +782,12 @@ def main() -> None:
         # Validate arguments
         if args.filter_client_ip:
             args.filter_client_ip = validate_ip_addresses(args.filter_client_ip)
+        
+        # Parse and validate operation type filter
+        filter_op_include = None
+        filter_op_exclude = None
+        if hasattr(args, 'filter_op_type') and args.filter_op_type:
+            filter_op_include, filter_op_exclude = validate_operation_types(args.filter_op_type)
         
         # Load or build data model
         data_model = load_or_build_data_model(args)
@@ -672,7 +820,15 @@ def main() -> None:
         elif args.command == 'unindexed-searches':
             print_unindexed_searches_table(connections)
         elif args.command == 'connection-details':
-            print_connection_details(connections, args.resolve_hostnames, conn_id=getattr(args, 'conn_id', None))
+            print_connection_details(
+                connections, 
+                args.resolve_hostnames, 
+                conn_id=getattr(args, 'conn_id', None),
+                filter_err=getattr(args, 'filter_err', None),
+                filter_nentries=getattr(args, 'filter_nentries', None),
+                filter_op_include=filter_op_include,
+                filter_op_exclude=filter_op_exclude
+            )
         
     except (LogFileNotFoundError, LogFilePermissionError) as e:
         print(f"File Error: {e}")

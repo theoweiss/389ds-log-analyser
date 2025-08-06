@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2025-01-19
+
+### Added
+- Operation type filtering with `--filter-op-type` option for `connection-details` command
+- Support for comma-separated operation types (e.g., `ADD,SRCH,MOD`)
+- Negation support with `!` prefix to exclude operation types (e.g., `!BIND`)
+- Comprehensive validation with helpful error messages for invalid operation types
+- Advanced filtering combinations with existing filters (`--filter-err`, `--filter-nentries`)
+
+### Enhanced
+- Updated README with extensive documentation and examples for operation type filtering
+- Added operation type analysis examples for authentication monitoring and write operation tracking
+- Improved CLI help text with detailed operation type filter syntax examples
+
 ## [1.6.2] - 2025-01-18
 
 ### Added
